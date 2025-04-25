@@ -4,7 +4,7 @@
 **ZAI is an open-source AI agent gateway designed to onboard billions of normies. It pioneers intuitive, streamlined multi-agent orchestration to accelerate crypto mass adoption. With ZAI, users can seamlessly interact with decentralized financial systems — including memecoins, dApps, NFTs, and more—using natural language inputs like text and voice.**  
 
   
-![](./zai-agent/public/chat.png)
+![](./zai-agent/public/chat.jpg)
 
   
 ## Features & Capabilities
