@@ -1,9 +1,8 @@
-import { getHistoryList } from "@/api/ai/chiat";
+import { getHistoryList } from "@/apis/ai/chat";
 import {create} from "zustand";
 import { token } from "./userStore";
-import {timestampToDateFormat} from "@/utils/utils.ts";
-import { t } from "i18next";
-
+import {timestampToDateFormat} from "@/utils/utils";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface ChatInner {
     chatList: any;
 }
@@ -42,8 +41,8 @@ export const requestChatList = async () => {
                     previousList.push(item);
                 }
             }
-            list.push({ header: t("home.today"), children: todayList });
-            list.push({ header: t("home.previous"), children: previousList });
+            list.push({ header: "Today", children: todayList });
+            list.push({ header: "Previous", children: previousList });
             useChatStore.setState({ chatList: list });
         }
     }

@@ -1,57 +1,78 @@
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
 import logo from "@/assets/agent/logo.webp";
-import IcMore from "@/assets/ic_more.svg";
-import IcDelete from "@/assets/ic_delete.svg";
-import { clearChatList, requestChatList, useChatStore } from "@/store/chatStore";
-import { Skeleton } from "primereact/skeleton";
-import { OverlayPanel } from 'primereact/overlaypanel';
-import { useUserStore } from "@/store/userStore";
-import { delChat } from "@/api/ai/chiat";
-import {Accordion, AccordionTab} from "primereact/accordion";
-import arrowRightIcon from "@/assets/ic_arrow_right.svg";
-import chatHistoryIcon from "@/assets/ic_chat_history.svg";
+import IcDeFAISidebar from "@/assets/ic_defai_sidebar.svg";
+import IcDownSidebar from "@/assets/ic_down_sidebar.svg";
+import IcDeFAILendingSidebar from "@/assets/ic_defai_lending_sidebar.svg";
+import IcDeFAIStakingSidebar from "@/assets/ic_defai_staking_sidebar.svg";
+import IcChatSidebar from "@/assets/ic_chat_sidebar.svg";
+import IcTradingSidebar from "@/assets/ic_trading_sidebar.svg";
+import IcRewardsSidebar from "@/assets/ic_rewards_sidebar.svg";
+import IcToggleSidbar from "@/assets/ic_toggle_sidebar.svg";
+import IcLogoCookie from "@/assets/ic_logo_cookie.webp";
+import IcLogoJupiter from "@/assets/ic_logo_jupiter.webp";
+import IcLogoRaydium from "@/assets/ic_logo_raydium.webp";
+import IcLogoDeepseek from "@/assets/ic_logo_deepseek.webp";
+import IcLogoTiktok from "@/assets/ic_logo_tiktok.webp";
+import IcLogoGrok from "@/assets/ic_logo_grok.svg";
+import IcLogoX from "@/assets/ic_logo_x.svg";
+import IcLogoGithub from "@/assets/ic_logo_github.svg";
+import IcLogoYtb from "@/assets/ic_logo_ytb.svg";
+import IcDocsX from "@/assets/ic_logo_docs.svg";
+import IcLogoTapestry from "@/assets/ic_logo_tapestry.webp";
+import { clearChatList, requestChatList } from "@/store/chatStore";
+import { isLogin, useUserStore } from "@/store/userStore";
+import { docsLink, githubLink, homeLink, xLink, youtubeLink } from "@/utils/constants";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { isDev } from "@/utils/env";
+import { useMessage } from "@/hooks/message";
+import { usePathname, useRouter } from "next/navigation";
 
 interface Props {
   isOpen: boolean;
   setOpen: (isOpen: boolean) => void;
 }
-const Sidebar: React.FC<Props> = ({ isOpen, setOpen }) => {
 
-  const {t} = useTranslation();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const [loading, setLoading] = useState(true);
+const Sidebar: React.FC<Props> = ({ isOpen, setOpen }) => {
+  const { callApp } = useMessage();
+  const router = useRouter();
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const chatList = useChatStore((state) => state.chatList);
   const userInfo = useUserStore((state) => state.userInfo);
-  const op = useRef<OverlayPanel>(null);
-  const [currentDelTarget, setCurrentDelTarget] = useState(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const { showDialog, hideDialog } = useDialog();
+  const pathname = usePathname();
+  const [openDeFAI, setOpenDeFAI] = useState(false);
+
+  const pathnameToActive = (pathname: string) => {
+    if (pathname.startsWith("/trading")) {
+      return 1;
+    } else if (pathname === "/rewards") {
+      return 2;
+    }
+    return 0;
+  };
+  const [active, setActive] = useState(() => pathnameToActive(pathname));
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-    }, 1200)
-
-    requestChatList();
+    // requestChatList();
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      clearTimeout(timeoutId);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   useEffect(() => {
+    setActive(pathnameToActive(pathname));
+  }, [pathname]);
+
+  useEffect(() => {
     console.log("Sidebar userInfo useEffect", userInfo);
     if (!userInfo) {
       clearChatList();
-      navigate("/");
     } else {
       requestChatList();
     }
   }, [userInfo]);
+
 
   const handleClickOutside = (event: any) => {
     const isMdScreen = window.matchMedia("(min-width: 768px)").matches;
@@ -62,141 +83,164 @@ const Sidebar: React.FC<Props> = ({ isOpen, setOpen }) => {
     }
   };
 
-  const toggleSidebar = (e: any) => {
+  const toggleSidebar = () => {
     setOpen(!isOpen);
   };
-
-  const toChatPage = (messageId: string) => {
-    navigate("/?chatId=" + messageId);
-  };
-
-  const handleMore = (e: any, item: any) => {
-    e.stopPropagation();
-    setCurrentDelTarget(item);
-    op.current?.toggle(e);
-  };
   
-  const delChatGroup = () => {
-    const chatIdParam = queryParams.get("chatId");
-    console.log('delChatGroup', currentDelTarget, chatIdParam);
-    if (currentDelTarget) {
-      const messageId = (currentDelTarget as any).messageId;
-      delChat(messageId).then((res) => {
-        op.current?.hide();
-        requestChatList();
-        if (chatIdParam === messageId) {
-          navigate("/");
-        }
-      });
+  const toX = () => {
+    window.open(xLink);
+  }
+  const toGithub = () => {
+    window.open(githubLink);
+  }
+  const toYoutube = () => {
+    window.open(youtubeLink);
+  }
+  const toDocs = () => {
+    window.open(docsLink);
+  }
+
+  const toHome = () => {
+    window.open(homeLink);
+  }
+  const toTrading = () => {
+    // if (!isLogin()) {
+    //   showLoginDialog();
+    //   return;
+    // }
+    router.push("/trading");
+  }
+  const toggerDeFAI = () => {
+    setOpenDeFAI(!openDeFAI)
+  }
+  
+  const toReward = () => {
+    // if (!isLogin()) {
+    //   showLoginDialog();
+    //   return;
+    // }
+    router.push("/rewards");
+  }
+  const catchTheBig = async () => {
+    if (pathname !== "/") {
+      router.push("/?from=catchthebig");
+      return;
     }
-    hideDialog();
-  }
+    const text = `Find whales`;
+    callApp(text);
 
-  const openDelChatGroupDialog = () => {
-    showDialog({
-      content: (
-          <DelectDialog onConfirm={delChatGroup} onCancel={hideDialog} />
-      ),
-  });
-  }
-
-  const customHeader = (options: any, index: number) => {
-    return (
-        <div className="flex justify-between items-center w-full cursor-pointer">
-          <span className="text-12px font-medium text-[#56637E]">{options.header}</span>
-          <img src={arrowRightIcon}
-              className={`w-2.5 h-2.5 transition-transform duration-300 ${
-                  activeIndex === index ? "rotate-90" : "rotate-0"
-              }`}
-          />
-        </div>
-    );
-  };
-
-  const handleTabChange = (e: any) => {
-    setActiveIndex(e.index);
   };
 
   return (
-    <div
-      className={`bg-[#F9F9F9] text-grap-200 z-10 transition-all duration-200 ease-in-out fixed left-0 top-0 h-full shadow-2xl md:shadow-none ${isOpen ? 'w-64' : '-translate-x-full'
-        }`}
-        ref={sidebarRef}
-    >
-      <div className="flex justify-between items-center px-4 h-54px w-64">
-        <img src={logo} className="h-[34px]" />
+      <div className={`fixed left-0 top-0 h-full z-11  ${isOpen ? 'w-screen md:w-auto' : ''} flex transition-all ease-in-out`} style={{transform: isOpen ? "" : "translateX(-100%)"}}>
+        <div
+            className={`bg-[#FBF9FF] text-grap-200   flex flex-col duration-200 md:shadow-none w-64`}
+            ref={sidebarRef}
+        >
+          <div className="flex justify-between items-center px-4 h-[56px] w-64">
+            <Image src={logo} className="h-[34px] cursor-pointer" height={34} onClick={toHome} priority alt={""}/>
 
-        <button onClick={toggleSidebar} className={`text-black focus:outline-none ${isOpen ? '' : 'hidden'}`}>
-          <ToggleSidebarSvg />
-        </button>
+            <button onClick={toggleSidebar} className={`text-black focus:outline-none ${isOpen ? '' : 'hidden'}`}>
+              <Image className="w-[34px] h-[34px]" src={IcToggleSidbar} width={34} alt={""} />
+            </button>
 
-      </div>
-      {/*<div className="flex justify-start items-center mt-8 pl-4 h-25px w-64 text-[#56637E] text-12px">
+          </div>
+          {/*<div className="flex justify-start items-center mt-8 pl-4 h-25px w-64 text-[#56637E] text-12px">
         <span>Today</span>
       </div>*/}
-      <div className="flex items-center mt-4 ml-4">
-        <img className="w-4 h-4" src={chatHistoryIcon} />
-        <span className="ml-3 text-black">{ t("home.chat_history") }</span>
-      </div>
-      <div className="flex flex-col justify-start items-start mt-2 px-2 text-14px overflow-hidden">
-        {
-          loading ? (<>
-            <Skeleton width="6rem" height="1.25rem" className="ml-2 mt-2"></Skeleton>
-            <Skeleton width="12rem" height="1.25rem" className="ml-2 mt-2"></Skeleton></>
-          ) : (<>
-            <Accordion className="w-full" activeIndex={activeIndex} onTabChange={handleTabChange} >
-              {
-                chatList.map((item: any, index: any) => (
-                    <AccordionTab key={item.header} header={item.header} headerTemplate={(options) => customHeader(options, index)}
-                    pt={{
-                      headerIcon: {
-                        style: {
-                          display: "none"
-                        }
-                      },
-                      headerAction: {
-                        style: {
-                          padding: "0.5rem",
-                          backgroundColor: "transparent"
-                        }
-                      },
-                      content: {
-                        style: {
-                          padding: "0",
-                          fontSize: "14px",
-                          color: "black",
-                          backgroundColor: "transparent"
-                        }
-                      },
-                    }}>
-                      {item.children.map((block: any) => (
-                          <div key={`chat-block-${block.messageId}`}
-                               className="group w-full flex flex-row h-34px px-2 justify-start items-center hover:bg-[#EDEDED] hover:rounded-8px"
-                               onClick={() => toChatPage(block.messageId)}>
-                            <div className="flex-1 w-full flex justify-start items-center">
-                            <span className="w-full whitespace-nowrap overflow-hidden text-ellipsis">
-                              {block.title}
-                            </span>
-                              <img src={IcMore}
-                                   className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-[#EDEDED]"
-                                   onClick={(e) => handleMore(e, block)}/>
-                            </div>
-                          </div>
-                      ))}
-                    </AccordionTab>
-                ))
-              }
-            </Accordion>
-          </>)
-        }
-      </div>
-      <OverlayPanel ref={op}>
-        <div className="flex flex-row bg-background px-4 py-2 hover:bg-[#EDEDED]">
-          <img src={IcDelete}/>
-          <span className="p-0 ml-2" onClick={openDelChatGroupDialog}>Delete</span>
+
+          <div className={`flex items-center h-9 mt-4 px-2 mx-4 cursor-pointer ${active === 0 ? 'bg-[#EFE7FF]' : ''} rounded-lg`} onClick={() => router.push("/")}>
+            <Image className="w-4.5 h-4.5" src={IcChatSidebar} width={18} alt={""} />
+            <span className="ml-3 text-black">Smart Trading</span>
+          </div>
+
+          <div className={`flex items-center h-9 mt-2.5 px-2 mx-4 cursor-pointer ${active === 1 ? 'bg-[#EFE7FF]' : ''} rounded-lg`} onClick={() => toTrading()}>
+            <Image className="w-4.5 h-4.5" src={IcTradingSidebar} width={18} alt={""} />
+            <span className="ml-3 text-black select-none">Pro Trading</span>
+            <div className="ml-2 flex rounded-[7px] bg-[#F93A37] px-1.5"><span className="text-[10px] font-medium text-white select-none">Hot</span></div>
+          </div>
+
+          <div className={`flex items-center h-9 mt-2.5 px-2 mx-4 cursor-pointer rounded-lg`} onClick={() => toggerDeFAI()}>
+            <Image className="w-4.5 h-4.5" src={IcDeFAISidebar} width={18} alt={""} />
+            <span className="ml-3 text-black select-none">DeFAI</span>
+            <span className="ml-auto transition-transform duration-200" style={{ transform: openDeFAI ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
+          <Image className="w-4 h-4" src={IcDownSidebar} width={16} alt={""} />
+        </span>
+          </div>
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openDeFAI ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className={`group flex items-center h-8 mt-1 px-2 mx-4 cursor-pointer rounded-lg`}>
+              <Image className="ml-7.5 w-4.5 h-4.5" src={IcDeFAILendingSidebar} width={18} alt={""} />
+              <span className="ml-1.5 text-[14px] text-black select-none">Lending</span>
+              <div className="flex ml-2 rounded-[10px] px-2 defai_bg md:px-0.75 md:hidden md:group-hover:flex"><span className="text-[10px] text-white select-none">Coming Soon</span></div>
+            </div>
+            <div className={`group flex items-center h-8 mt-1 px-2 mx-4 cursor-pointer rounded-lg`}>
+              <Image className="ml-7.5 w-4.5 h-4.5" src={IcDeFAIStakingSidebar} width={18} alt={""} />
+              <span className="ml-1.5 text-[14px] text-black select-none">Staking</span>
+              <div className="flex ml-2 rounded-[10px] px-2 defai_bg md:px-0.75 md:hidden md:group-hover:flex"><span className="text-[10px] text-white select-none">Coming Soon</span></div>
+            </div>
+          </div>
+
+          <div className={`flex items-center h-9 mt-2.5 px-2 mx-4 cursor-pointer ${active === 2 ? 'bg-[#EFE7FF]' : ''} rounded-lg`} onClick={() => toReward()}>
+            <Image className="w-4.5 h-4.5" src={IcRewardsSidebar} width={18} alt={""} />
+            <span className="ml-3 text-black select-none">Rewards</span>
+          </div>
+
+          {/*<div className="flex items-center h-9 mt-2.5 px-2 mx-4 cursor-pointer" onClick={catchTheBig}>
+        <Image className="w-4.5 h-4.5" src={IcCatchTheBigSidebar} width={18} alt={""} />
+        <span className="ml-3">Catch The Big</span>
+        <div className="ml-2 bg-[#F93A37] w-6 h-3 flex items-center justify-center rounded-[3px]">
+          <span className="text-white text-[10px]">Hot</span>
         </div>
-      </OverlayPanel>
-    </div>
+
+      </div>*/}
+          <div className="flex flex-col flex-1 justify-start items-start mt-4 px-2 text-14px overflow-auto">
+          </div>
+
+          <div className="mx-2 px-2 mb-4 text-sm">
+
+            <div className="mb-2">
+              <div className="h-9 text-black flex flex-row items-center cursor-pointer hover:bg-b-hover" onClick={toDocs}>
+                <Image className="mr-2.5" src={IcDocsX} width={18} alt={""}/>Docs
+              </div>
+            </div>
+
+            <div className="mb-3.5">
+              <div className="h-[0.5px] w-full bg-[#E4E4E7] mb-3.5"></div>
+              <div className="h-7 text-color_text_middle">DeFAI Integrations</div>
+              <div className="h-7 flex flex-row items-center">
+                <Image className="w-6 h-6 mr-5" src={IcLogoCookie} width={24} alt={""}/>
+                <Image className="w-6 h-6 mr-5" src={IcLogoJupiter} width={24} alt={""}/>
+                <Image className="w-6 h-6 mr-5" src={IcLogoRaydium} width={24} alt={""}/>
+                <Image className="w-6 h-6 mr-5" src={IcLogoDeepseek} width={24} alt={""}/>
+                <Image className="w-6 h-6" src={IcLogoTiktok} width={24} alt={""}/>
+              </div>
+              <div className="h-7 mt-2 flex flex-row items-center">
+                <Image className="w-6 h-6 mr-5" src={IcLogoTapestry} width={24} alt={""}/>
+                <Image className="w-6 h-6" src={IcLogoGrok} width={24} alt={""}/>
+              </div>
+            </div>
+
+            <div className="h-[0.5px] w-full bg-[#E4E4E7] mb-1.25"></div>
+
+            <div className="h-9 flex flex-row items-center">
+              <div className="text-color_text_middle">Follow Us</div>
+              <div className="flex flex-row items-center ml-auto">
+                <Image className="w-4.5 h-4.5 mr-3 cursor-pointer" src={IcLogoX} width={18} alt={"x"} onClick={toX}/>
+                <Image className="w-4.5 h-4.5 mr-3 cursor-pointer" src={IcLogoGithub} width={18} alt={"github"} onClick={toGithub}/>
+                <Image className="w-4.5 h-4.5 mr-3.5 cursor-pointer" src={IcLogoYtb} width={18} alt={"youtube"} onClick={toYoutube}/>
+              </div>
+            </div>
+
+            <div>
+              {
+                isDev ? <div className="absolute bottom-0.5 text-[10px] text-color_text_middle">{`V${process.env.APP_VERSION} (build: ${process.env.APP_BUILD_TIME})`}</div> : <></>
+              }
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#00000066] backdrop-blur-[4px] md:bg-transparent flex-1" onClick={toggleSidebar} />
+      </div>
+
   );
 };
 

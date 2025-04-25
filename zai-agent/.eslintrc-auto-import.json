@@ -109,6 +109,27 @@
     "AssistantBuyBlock": true,
     "AssistantTransactionStatusBlock": true,
     "AssistantSellBlock": true,
-    "DelectDialog": true
+    "DelectDialog": true,
+    "MainQuesstion": true,
+    "LoginDialog": true,
+    "LoginLoadingDialog": true,
+    "DialogTemplate": true,
+    "AssistantTopUpAccount": true,
+    "AssistantTiktokUser": true,
+    "AssistantLink": true,
+    "LoginShareDialog": true,
+    "AssistantTokenDetailHtmlBlock": true,
+    "RightSidebar": true,
+    "AddFundsDialog": true,
+    "AddFundsCodeDialog": true,
+    "TitleDialog": true,
+    "AddFundsWalletDialog": true,
+    "AddFundsWalletAmountDialog": true,
+    "WalletContext": true,
+    "ZAIWalletProvider": true,
+    "WalletModalContext": true,
+    "useWalletModal": true,
+    "ZAIWalletContext": true,
+    "useZAIWallet": true
   }
 }

@@ -11,8 +11,8 @@ const UserContentBlock: React.FC<UserContentBlockProps> = ({text, onTyping}) => 
     wordBreak: 'break-word',
   };
 
-  const processText = (inputText: string): JSX.Element[] => {
-    const sections: JSX.Element[] = [];
+  const processText = (inputText: string): React.ReactNode[] => {
+    const sections: React.ReactNode[] = [];
     sections.push(<div key={`text-0`} style={preformattedTextStyles}>{inputText}</div>);
     // inputText.split(SNIPPET_MARKERS.begin).forEach((section, index) => {
     //   if (index === 0 && !section.includes(SNIPPET_MARKERS.end)) {

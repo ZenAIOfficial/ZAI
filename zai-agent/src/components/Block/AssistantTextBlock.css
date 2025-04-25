@@ -195,15 +195,16 @@
 .prose :where(code):not(:where([class~=not-prose] *)) {
   color: var(--tw-prose-code);
   font-size: .875em;
-  font-weight: 600
+  background: #f5f6f7;
+  padding: 2px 6px;
 }
 
 .prose :where(code):not(:where([class~=not-prose] *)):before {
-  content: "`"
+  content: none
 }
 
 .prose :where(code):not(:where([class~=not-prose] *)):after {
-  content: "`"
+  content: none
 }
 
 .prose :where(a code):not(:where([class~=not-prose] *)) {
@@ -315,10 +316,10 @@
 }
 
 .prose {
-  --tw-prose-body: #374151;
+  --tw-prose-body: #1f2328;
   --tw-prose-headings: #111827;
   --tw-prose-lead: #4b5563;
-  --tw-prose-links: #111827;
+  --tw-prose-links: #7AB7FF;
   --tw-prose-bold: #111827;
   --tw-prose-counters: #6b7280;
   --tw-prose-bullets: #d1d5db;
@@ -348,7 +349,7 @@
   --tw-prose-invert-th-borders: #4b5563;
   --tw-prose-invert-td-borders: #374151;
   font-size: 1rem;
-  line-height: 1.33;
+  line-height: 1.65;
 }
 
 .prose :where(p):not(:where([class~=not-prose] *)) {

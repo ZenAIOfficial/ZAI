@@ -1,5 +1,5 @@
 import React from 'react';
-import {Image} from "primereact/image";
+import Image from "next/image";
 import sendIcon from "@/assets/ic_send.svg";
 
 interface SubmitButtonProps {
@@ -15,9 +15,9 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({ loading, disabled, n
             name={name}
             type="submit"
             disabled={loading || disabled}
-            className="mr-4 rounded-md text-primary2 disabled:opacity-40 relative z-10"
+            className="mr-3 md:mr-4 rounded-full text-primary2 disabled:opacity-40 relative z-10"
         >
-            <Image src={ sendIcon as string } />
+            <Image src={sendIcon as string} alt={''} />
         </button>
     );
 };

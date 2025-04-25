@@ -1,6 +1,10 @@
+'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as echarts from "echarts";
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 import BigNumber from "bignumber.js";
+import {formatNumber, formatPrice} from "@/utils/utils";
+import {useMedia} from "@/hooks/useMedia";
 
 interface Props {
     list: any[];
@@ -11,6 +15,7 @@ const ChartComponent: React.FC<Props> = ({list}) => {
     let lineChart: echarts.ECharts;
     let chartFirstPrice: any;
     let chartLastPrice: any;
+    const { isPhone } = useMedia();
 
     const initChart = () => {
         if (list.length === 0) return;
@@ -47,6 +52,7 @@ const ChartComponent: React.FC<Props> = ({list}) => {
             });
             // setChartListener();
         }
+        const timeInterval =(convertedData[1][0] - convertedData[0][0]) / 3600000;
         const option = {
             // animation: false,
             tooltip: {
@@ -118,13 +124,37 @@ const ChartComponent: React.FC<Props> = ({list}) => {
                     show: false,
                 },
                 axisLabel: {
-                    show: false,
-                    margin: 10,
-                    interval: 0,
+                    show: true,
+                    rotate: 38,
+                    formatter: (value: any, index: number) => {
+                        const date = new Date(value);
+                        // console.log('formatter', index, value, date);
+                        if (timeInterval < 1) {
+                            const hour = String(date.getHours()).padStart(2, "0");
+                            const minute = String(date.getMinutes()).padStart(2, "0");
+                            return `${hour}:${minute}`;
+                        }
+                        if (index === 1) {
+                            const month = String(date.getMonth() + 1).padStart(2, "0");
+                            const day = String(date.getDate()).padStart(2, "0");
+                            return `${month}-${day}`;
+                        }
+                        
+                        const month = String(date.getMonth() + 1).padStart(2, "0");
+                        const day = String(date.getDate()).padStart(2, "0");
+                        return `${month}-${day}`;
+                    },
+                    color: "#B6B6B6",
+                    fontSize: 10,
+                    margin: 15,
                 },
                 splitLine: {
                     show: false,
                 },
+                max: date[date.length - 1],
+                min: date[0],
+                interval: (date[date.length - 1] - date[0]) / (isPhone ? 5 : 10),
+                splitNumber: (isPhone ? 5 : 10),
             },
             yAxis: {
                 type: "value",
@@ -136,20 +166,30 @@ const ChartComponent: React.FC<Props> = ({list}) => {
                     show: false,
                 },
                 axisLabel: {
-                    show: false,
-                    margin: 0,
+                    show: true,
+                    margin: 12,
                     interval: 0,
+                    color: "#666666",
+                    fontWeight: 600,
+                    formatter: function (value: any) {
+                        const price = formatPrice(value, 3);
+                        // console.log("y formatter:", value, formatPrice(value, 3))
+                        return formatNumber(price);
+                    }
                 },
                 splitLine: {
-                    show: false,
+                    show: true,
+                    lineStyle: {
+                        color: "#0000000A",
+                    }
                 },
                 axisPointer: {
                     show: false,
                 },
                 max: max,
                 min: min,
-                interval: (max - min) / 5,
-                splitNumber: 5,
+                interval: (max - min) / 4,
+                splitNumber: 4,
             },
             series: [
                 {
@@ -217,7 +257,7 @@ const ChartComponent: React.FC<Props> = ({list}) => {
     }, []);
 
     return (
-        <div ref={chartRef} id="container" className="w-full h-220px"/>
+        <div ref={chartRef} id="container" className="w-full h-[285px]"/>
     )
 }
 

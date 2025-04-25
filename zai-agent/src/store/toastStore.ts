@@ -1,6 +1,6 @@
 import {create} from "zustand";
 
-export const TOAST_TIME = 4000;
+export const TOAST_TIME = 3000;
 
 export const showToast = (severity: string, detail: string, life: number) => {
         useToastStore.setState?.({toast: {detail:detail, severity: severity, life: life}, showing: true})

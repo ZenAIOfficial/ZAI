@@ -1,7 +1,12 @@
 const AssistantThinkBlock = () => {
 
   return (
-    <div>Thinking...<i className="ml-2 pi pi-spin pi-spinner text-gray-600" style={{ fontSize: '0.8rem' }}></i></div>
+    <div className="flex flex-row"><span>Thinking</span>
+    <div className='dot-flashing ml-2'>
+      <div className='circle'></div>
+      <div className='circle'></div>
+    </div>
+    </div>
   );
 };
 

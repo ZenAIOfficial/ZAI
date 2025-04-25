@@ -1,9 +1,12 @@
-import {useWallet} from "@solana/wallet-adapter-react";
-import {VersionedTransaction} from "@solana/web3.js";
-import type {WalletName} from "@solana/wallet-adapter-base";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useWallet } from "@solana/wallet-adapter-react";
+import { VersionedTransaction } from "@solana/web3.js";
+import type { WalletName } from "@solana/wallet-adapter-base";
 import bs58 from 'bs58'
-import {showToast, TOAST_TIME} from "@/store/toastStore.ts";
-import {t} from "i18next";
+import { showToast, TOAST_TIME } from "@/store/toastStore";
+import { t } from "i18next";
+import { getBlockhash } from "@/apis/transaction";
+import { useCallback } from "react";
 
 export const signMessageWithWallet = async (signMessage: ((message: Uint8Array) => Promise<Uint8Array>) | undefined, nonce: string) => {
     if (!signMessage) {
@@ -29,16 +32,18 @@ export const useIsWalletConnected = () => {
     return wallet && connected;
 };
 export const useConnectWallet = () => {
-    const { wallets, connecting, connected, select, connect } = useWallet();
+    const { wallet, wallets, connecting, connected, select, connect } = useWallet();
 
     return useCallback(
         async (walletName: WalletName, downloadUrl: string) => {
+            console.log(wallets.map((it) => it.adapter.name), walletName, downloadUrl, wallet?.adapter.name)
             if (wallets && wallets.filter((it) => it.adapter.name === walletName).length === 0) {
                 window.open(downloadUrl);
                 return;
             }
+            console.log('2222', walletName, downloadUrl, connected, connecting)
             if (!connected && !connecting) {
-                await select(walletName);
+                select(walletName);
                 await connect();
             }
         }, []
@@ -49,10 +54,10 @@ const versionedTransactionToBase64 = (transaction: VersionedTransaction) => {
     const serializedTransaction = transaction.serialize();
     const binaryString = String.fromCharCode(...serializedTransaction);
     return btoa(binaryString);
-  }
+}
 
-  
-export const walletSignTransaction = async (transactionStr: string, signTransaction: any, connection: any) => {
+
+export const walletSignTransaction = async (transactionStr: string, signTransaction: any) => {
     const transaction = VersionedTransaction.deserialize(Buffer.from(transactionStr, 'base64'));
     console.log(transaction);
     if (!signTransaction) {
@@ -60,7 +65,22 @@ export const walletSignTransaction = async (transactionStr: string, signTransact
         return;
     }
 
-    
+    // const { blockhash, lastValidBlockHeight } = await mainConnection.getLatestBlockhash();
+    // console.info('10000000000000333:', mainConnection);
+    // console.info('10000000000000111:', blockhash);
+    // console.info('10000000000000222:', lastValidBlockHeight);
+    // transaction.message.recentBlockhash = blockhash;
+    // console.log("kkkkkkkkkk:", transaction)
+
+    try {
+        const blockhashInfo = await getBlockhash();
+        if (blockhashInfo && blockhashInfo.blockhash) {
+            transaction.message.recentBlockhash = blockhashInfo.blockhash;
+        }
+    } catch (e) {
+        console.log(e)
+    }
+
     const signedTransaction = await signTransaction(transaction);
     return versionedTransactionToBase64(signedTransaction);
     // const serializedTransaction = signedTransaction.serialize();

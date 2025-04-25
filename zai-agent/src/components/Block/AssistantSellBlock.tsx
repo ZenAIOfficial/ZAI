@@ -1,14 +1,12 @@
-import React from "react";
-import { t } from "i18next";
+import React, { useState } from "react";
 import tokenInfoSvg from "@/assets/ic_token_info.svg";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { walletSignTransaction } from "@/utils/walletUtil";
-import { checkTransStatus, sendTrans } from "@/api/transaction";
-import {handleTransactionFailedToast, sleep} from "@/utils/utils";
-import {showToast, TOAST_TIME} from "@/store/toastStore.ts";
+import { checkTransStatus, pushTransStatus, sendTransaction } from "@/apis/transaction";
+import { checkTransactionCanRetry, handleTransactionFailedToast, sleep } from "@/utils/utils";
+import transferSuccessImg from "@/assets/ic_transaction_success.svg";
+import Image from "next/image"
 
 interface SwapTokenInfo {
-    oneQuestId: number;
+    oneQuestId: string;
     name: string;
     img: string;
     tokenAmount: number;
@@ -21,50 +19,75 @@ interface Props {
     token: SwapTokenInfo;
 }
 const AssistantSellBlock: React.FC<Props> = ({ token }) => {
-    const { signTransaction } = useWallet();
-    const { connection } = useConnection();
     const [loading, setLoading] = useState(false);
-    const [transferStatus, setTransferStatus] = useState(token.transferStatus || 0); // 0: creating 1: failed 2: successfull
-
+    const [transferStatus, setTransferStatus] = useState(token.transferStatus || 0); // 0: creating 1: failed retry 2: successfull 3: failed
+    const [newCode, setNewCode] = useState(token.code);
     const toSell = async () => {
         console.log("toSell", token.oneQuestId);
-        if (loading || transferStatus === 2) {
-            return;
-        }
-        if (token.code !== 200) {
-            const hint = handleTransactionFailedToast(token.code);
-            showToast("error", hint, TOAST_TIME);
+        if (loading || transferStatus === 2 || transferStatus === 3) {
             return;
         }
         try {
             setLoading(true);
-            const serializedTransaction = await walletSignTransaction(token.text, signTransaction, connection);
-            console.log(serializedTransaction);
-            const res = await sendTrans({
-                transaction: serializedTransaction,
-            });
-            console.log(res);
-            const status = await checkStatus(res.transaction);
-            if (status === "success") {
-                toBuySuccess();
+            const res = await sendTransaction(token.oneQuestId);
+            if (res.transaction) {
+                checkTransferStatus(res.transaction);
             } else {
-                toBuyFailure();
+                setLoading(false);
+                setNewCode(res.code);
+                if (checkTransactionCanRetry(res.code)) {
+                    toSellFailure();
+                } else {
+                    toSellFailureNotRetry();
+                }
+                return;
             }
         } catch (e) {
             console.log(e);
-        } finally {
             setLoading(false);
         }
     };
 
-    const toBuySuccess = () => {
-        console.log("toBuySuccess", token.oneQuestId);
+    const checkTransferStatus = (transaction: string) => {
+        checkStatus(transaction).then((status) => {
+            if (status === "success") {
+                toSellSuccess();
+            } else {
+                toSellFailure();
+            }
+        }).finally(() => {
+            setLoading(false);
+        })
+    }
+
+    const toSellSuccess = () => {
+        console.log("toSellSuccess", token.oneQuestId);
         setTransferStatus(2);
+        pushTransStatus({
+            "action": "sellToken",
+            "oneQuestId": token.oneQuestId,
+            "transferStatus": 2
+        });
     };
 
-    const toBuyFailure = () => {
-        console.log("toBuyFailure", token.oneQuestId);
+    const toSellFailure = () => {
+        console.log("toSellFailure", token.oneQuestId);
         setTransferStatus(1);
+        pushTransStatus({
+            "action": "sellToken",
+            "oneQuestId": token.oneQuestId,
+            "transferStatus": 1
+        });
+    };
+
+    const toSellFailureNotRetry = () => {
+        console.log("toSellFailureNotRetry", token.oneQuestId);
+        setTransferStatus(3);
+        pushTransStatus({
+            "action": "sellToken",
+            "oneQuestId": token.oneQuestId,
+            "transferStatus": 3
+        });
     };
 
     const checkStatus = async (transaction: string) => {
@@ -75,7 +98,7 @@ const AssistantSellBlock: React.FC<Props> = ({ token }) => {
                     transaction,
                 });
                 console.log(res);
-                if (res.confirmationStatus === "finalized") {
+                if (res.confirmationStatus === "confirmed") {
                     return "success";
                 }
             } catch (e) {
@@ -89,25 +112,39 @@ const AssistantSellBlock: React.FC<Props> = ({ token }) => {
         return "failure";
     };
 
+    const transferStatusDiv = () => {
+        if (transferStatus === 0) {
+            return <span>Sell</span>
+        }
+        if (transferStatus === 1) {
+            return <span>Retry</span>
+        }
+        if (transferStatus === 2) {
+            return (<div className="flex items-center justify-center gap-1.5">
+                <Image className="w-5 h-5" width={20} src={transferSuccessImg} alt={""} />
+                <span>Transaction Successful</span>
+            </div>)
+        }
+        return <span>Transaction Failed</span>
+    }
 
     return (
         <div className="flex flex-col">
-            <div className="bg-white border rounded-2xl pb-3 px-3 pt-4 w-full shadow-border-message">
+            <div className="bg-white border border-b-normal rounded-2xl pb-3 px-4 pt-4 w-full shadow-border-message">
                 <div className="flex flex-row">
-                    <img className="w-5 h-5" src={tokenInfoSvg} />
+                    <Image className="w-5 h-5" width={20} src={tokenInfoSvg} alt={""} />
                     <span className="ml-2 text-primary2 text-4 font-medium">Sell Token</span>
                 </div>
                 <div className="text-color_text_middle text-sm leading-none mt-2">
                     <span>Amount:<span className="mr-1">{token.tokenAmount}</span>{token.name}</span>
                 </div>
                 <div onClick={toSell}
-                    className={`rounded-8px w-full h-38px text-white mt-4 mb-3 flex items-center justify-center text-3.5 hover:bg-[#EA2EFE80] ${transferStatus === 2 ? "bg-color_text_middle" : "bg-primary1"}`}>
-                    {loading ? <><span>{t("chat.sell")}...</span><i className="pi pi-spin pi-spinner text-white ml-2"></i></> : <><span>{transferStatus === 2 ? t("chat.transfer_success")
-                        : transferStatus === 1 ? t("chat.retry") : t("chat.sell")}</span></>}
+                    className={`rounded-full w-full h-[38px] mt-4 flex items-center justify-center text-3.5 ${transferStatus === 0 ? "transfer_bg text-white hover:opacity-70 cursor-pointer" : transferStatus === 1 ? "bg-primary1 hover:bg-[#EA2EFE80] cursor-pointer text-white" : transferStatus === 2 ? "bg-green_5 text-green" : "bg-black_60 text-white"}`}>
+                    {loading ? <><span>Sell...</span><i className="pi pi-spin pi-spinner text-white ml-2"></i></> : transferStatusDiv()}
                 </div>
-                <span className="text-red_text">{transferStatus === 1 ? t("chat.transfer_failed") : ""}</span>
+                <span className="text-red_text">{transferStatus === 1 || transferStatus === 3 ? handleTransactionFailedToast(newCode) : ""}</span>
             </div>
-            <span className="font-medium text-3.5 leading-normal text-primary2 mt-2">{transferStatus === 1 ? t("chat.transfer_fail_message") : ""}</span>
+            <span className="font-medium text-3.5 leading-normal text-primary2 mt-2">{transferStatus === 1 || transferStatus === 3 ? "An unknown error occurred with this transaction." : ""}</span>
         </div>
     );
 };

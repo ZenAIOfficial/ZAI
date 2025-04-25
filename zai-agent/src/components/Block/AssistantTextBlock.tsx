@@ -6,12 +6,11 @@ import rehypeRaw from 'rehype-raw'
 
 // import SyntaxHighlighter from 'react-syntax-highlighter';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-// import gfm from "remark-gfm";
 import "github-markdown-css/github-markdown.css";
 // import remarkMath from 'remark-math'
 // import rehypeKatex from 'rehype-katex'
 // import 'katex/dist/katex.min.css'
-import { coldarkDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 
 interface Props {
@@ -42,7 +41,23 @@ const AssistantTextBlock: React.FC<Props> = ({ text, role, loading }) => {
     );
   }
 
-  function codeBlock({ node, className, children, ...props }: any) {
+  // const {children, className, node, ...rest} = props
+  // const match = /language-(\w+)/.exec(className || '')
+  // return match ? (
+  //   <SyntaxHighlighter
+  //     {...rest}
+  //     PreTag="div"
+  //     children={String(children).replace(/\n$/, '')}
+  //     language={match[1]}
+  //     style={oneLight}
+  //   />
+  // ) : (
+  //   <code {...rest} className={className}>
+  //     {children}
+  //   </code>
+  // )
+
+  function codeBlock({ node, className, children, ...rest }: any) {
     if (!children) {
       return null;
     }
@@ -53,12 +68,8 @@ const AssistantTextBlock: React.FC<Props> = ({ text, role, loading }) => {
     // Note: OpenAI does not always annotate the Markdown code block with the language
     // Note: In this case, we will fall back to plaintext
     const match = /language-(\w+)/.exec(className || '');
-    let language: string = match ? match[1] : 'plaintext';
-    const isInline = node.properties.dataInline;
-
-    return isInline ? (
-      inlineCodeBlock({ value: value, language })
-    ) : (
+    const language: string = match ? match[1] : 'plaintext';
+    return match ? (
       <div className="relative border border-gray-200 dark:border-gray-800 rounded-md codeBlockContainer dark:bg-gray-850">
         <div
           className="flex items-center text-gray-900 dark:text-gray-200 bg-gray-200 dark:bg-gray-850 px-4 py-2 text-xs font-sans justify-between rounded-t-md">
@@ -66,13 +77,14 @@ const AssistantTextBlock: React.FC<Props> = ({ text, role, loading }) => {
         </div>
         <div className="sticky top-9 md:top-[5.75rem]">
           <div className="absolute bottom-0 right-2 flex h-8 items-center">
-            <CopyButton className="rounded bg-gray-200 dark:bg-gray-850" text={children} />
+            Copy
+            {/* <CopyButton className="rounded bg-gray-200 dark:bg-gray-850" text={children} /> */}
           </div>
         </div>
         <div className="overflow-y-auto">
           <SyntaxHighlighter
             language={language}
-            style={userSettings.theme === 'dark' ? coldarkDark : oneLight}
+            style={oneLight}
             customStyle={
               {
                 margin: '0'
@@ -81,11 +93,10 @@ const AssistantTextBlock: React.FC<Props> = ({ text, role, loading }) => {
           >
             {value}
           </SyntaxHighlighter>
-          {/* <code {...props} className={className}>
-                        {children}
-                    </code>*/}
         </div>
       </div>
+    ) : (
+      inlineCodeBlock({ value: value, language })
     );
   }
 
@@ -101,16 +112,17 @@ const AssistantTextBlock: React.FC<Props> = ({ text, role, loading }) => {
     );
   }
 
+
   const renderers = {
-    code: codeBlock,
     pre: customPre,
+    code: codeBlock,
   };
 
   return (
     <div className='prose'>
       <ReactMarkdown
-        components={renderers}
         rehypePlugins={[rehypeRaw]}
+        components={renderers}
       >
         {text}
       </ReactMarkdown>

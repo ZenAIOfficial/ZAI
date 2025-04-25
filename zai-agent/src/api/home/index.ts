@@ -1,4 +1,4 @@
-import { http } from "@/api/core";
+import { http } from "@/apis/core";
 
 export interface CoinGeckoInfo {
   id: number;

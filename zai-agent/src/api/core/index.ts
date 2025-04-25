@@ -9,6 +9,7 @@ import { aesDecrypted, aesEncode, generateRandom, generateSign, rsaEncode } from
 import { showToast, TOAST_TIME } from "@/store/toastStore.ts";
 import { isDebugEnvironment } from "@/utils/utils";
 import { token } from "@/store/userStore";
+import {TrendParams} from "@/api/trading";
 
 const server_time_key = "server_time_key";
 const time_difference = "time_difference";
@@ -57,7 +58,6 @@ class Http {
 
     private getHeader(): Record<string, string> {
         const tokenVal = token();
-        // const token = "zhukun123";
         if (tokenVal) {
             return {
                 "token": tokenVal,
@@ -258,6 +258,23 @@ class Http {
         });
     }
 
+    public requestTokenList<T>(paramConfig: AxiosRequestConfig): Promise<T> {
+        const config = { ...Http.axiosConfigDefault, ...paramConfig };
+        return new Promise((resolve, reject) => {
+            Http.axiosInstance
+                .request(config)
+                .then((response: unknown) => {
+                    if (typeof response === "object" && response !== null) {
+                        (response as ObjectResult2<T>)["params"] = config.params;
+                    }
+                    resolve((response as T));
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        });
+    }
+
     public async chat(path: string) {
         const config = this.getHeader();
         return fetch(configDefault.baseURL + path, {
@@ -284,5 +301,12 @@ export interface ListResult<T> {
 export interface ObjectResult<T> {
     code: number;
     message: string;
+    result: T;
+}
+
+export interface ObjectResult2<T> {
+    code: number;
+    message: string;
+    params: TrendParams;
     result: T;
 }

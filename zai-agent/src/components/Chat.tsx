@@ -1,16 +1,20 @@
+import { ChatMessage } from '@/apis/ai/chat';
 import React, {useEffect, useRef} from 'react';
-import ChatBlock from "./ChatBlock";
-import {ChatMessage} from "@/models/ChatCompletion";
+import ChatBlock from './ChatBlock';
+import AssistantErrorBlock from './AssistantErrorBlock';
 
 interface Props {
   chatBlocks: ChatMessage[];
   onChatScroll: (isAtBottom: boolean) => void;
   allowAutoScroll: boolean;
   loading: boolean;
+  error: string | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleManualResponse: (qId: string, content: any[]) => void;
 }
 
 const Chat: React.FC<Props> = ({
-                                 chatBlocks, onChatScroll, allowAutoScroll, loading
+                                 chatBlocks, onChatScroll, allowAutoScroll, loading, error, handleManualResponse,
                                }) => {
   const chatDivRef = useRef<HTMLDivElement>(null);
 
@@ -18,7 +22,6 @@ const Chat: React.FC<Props> = ({
   }, []);
 
   useEffect(() => {
-    // console.log("2222222", chatDivRef.current, chatDivRef.current.scrollTop, chatDivRef.current.scrollHeight);
     if (chatDivRef.current && allowAutoScroll) {
       chatDivRef.current.scrollTop = chatDivRef.current.scrollHeight;
     }
@@ -62,15 +65,20 @@ const Chat: React.FC<Props> = ({
   }
 
   return (
-      <div ref={chatDivRef} className="w-full relative flex-1 overflow-auto px-4" onScroll={handleScroll}>
-        <div className="relative chat-container1 flex flex-col items-center text-sm">
+
+      <div ref={chatDivRef} className="w-full relative overflow-auto px-3 md:px-4" onScroll={handleScroll}>
+        <div className="relative flex flex-col items-center text-sm md:max-w-3xl m-auto ">
           {chatBlocks.map((block, index) => (
               <ChatBlock key={`chat-block-${block.id}`}
                          block={block}
                          loading={index === chatBlocks.length - 1 && loading}
                          isLastBlock={index === chatBlocks.length - 1}
-                         onTyping={onTyping}/>
+                         onTyping={onTyping}
+                         handleManualResponse={handleManualResponse} />
           ))}
+          {
+            error && <AssistantErrorBlock text={error} />
+          }
           <div className="w-full h-2 flex-shrink-0"></div>
         </div>
       </div>

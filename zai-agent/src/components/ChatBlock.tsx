@@ -1,17 +1,19 @@
-import { ChatMessage } from '@/models/ChatCompletion';
 import React, { useRef } from 'react';
-import UserContentBlock from './UserContentBlock';
-import { Image } from "primereact/image";
+import Image from "next/image";
 import zaiGirlImg from "@/assets/ic_zai_girl.webp";
+import { ChatMessage } from '@/apis/ai/chat';
+import UserContentBlock from './UserContentBlock';
+import AssistantContentBlock from './AssistantContentBlock';
 
 interface Props {
   block: ChatMessage;
   loading: boolean;
   isLastBlock: boolean;
   onTyping?: () => void;
+  handleManualResponse: (qId: string, content: any[]) => void;
 }
 
-const ChatBlock: React.FC<Props> = ({ block, loading, isLastBlock, onTyping }) => {
+const ChatBlock: React.FC<Props> = ({ block, loading, isLastBlock, onTyping, handleManualResponse }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -24,7 +26,7 @@ const ChatBlock: React.FC<Props> = ({ block, loading, isLastBlock, onTyping }) =
               {block.role === 'user' ? (
                 <div />
               ) : block.role === 'assistant' ? (
-                <Image className="w-8" src={zaiGirlImg}></Image>
+                <Image className="w-8" width={32} src={zaiGirlImg} alt={''} />
               ) : null}
             </div>
           </div>
@@ -34,12 +36,11 @@ const ChatBlock: React.FC<Props> = ({ block, loading, isLastBlock, onTyping }) =
                 className="min-h-[20px] flex flex-col items-start gap-4">
                 <div ref={contentRef} className="w-full break-words light flex flex-row" style={{ justifyContent: block.role === "user" ? "end" : "start" }}>
                   {block.role === 'user' ? (
-                    <div className="bg-message_bg px-12px pv-8px rounded-3xl"><UserContentBlock text={block.content} /></div>
+                    <div className="bg-message_bg px-3 rounded-3xl"><UserContentBlock text={block.content} /></div>
                   ) : (
-                    <AssistantContentBlock text={block.showContent} onTyping={onTyping} />
+                    <AssistantContentBlock text={block.showContent} onTyping={onTyping} handleManualResponse={handleManualResponse} />
                   )}
                 </div>
-
               </div>
             </div>
           </div>
