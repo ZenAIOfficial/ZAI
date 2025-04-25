@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.math.BigInteger;
+
 
 @Data
 @Builder
@@ -21,10 +23,13 @@ public class ZAITransferTokenInfoContent extends ZAIBaseChatContent{
 
     private String imageUrl;
 
-    private Long amount;
+    private BigInteger amount;
 
     private Integer decimals;
 
 
     private String text;
+
+
+    private String network;
 }

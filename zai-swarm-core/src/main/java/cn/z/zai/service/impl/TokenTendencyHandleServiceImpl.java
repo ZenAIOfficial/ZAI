@@ -6,6 +6,7 @@ import cn.z.zai.dto.request.BirdEyeOHLCVRequest;
 import cn.z.zai.dto.response.BirdEyeOHLCVResponse;
 import cn.z.zai.dto.vo.TokenTendencyMaxVo;
 import cn.z.zai.dto.vo.TokenTendencyResp;
+import cn.z.zai.service.TokenSearchService;
 import cn.z.zai.service.TokenTendencyHandleService;
 import cn.z.zai.util.RedisUtil;
 import cn.z.zai.util.TimeUtil;
@@ -38,6 +39,8 @@ import java.util.stream.Collectors;
 @Service
 public class TokenTendencyHandleServiceImpl implements TokenTendencyHandleService {
 
+    @Autowired
+    private TokenSearchService tokenSearchService;
     @Autowired
     private BirdEyeApi birdEyeApi;
 
@@ -76,6 +79,11 @@ public class TokenTendencyHandleServiceImpl implements TokenTendencyHandleServic
             return oneDayList(address);
         }
         return oneDayList(address);
+    }
+
+    @Override
+    public List<TokenTendencyMaxVo> live(String address) {
+        return liveList(address);
     }
 
     @Override
@@ -461,7 +469,7 @@ public class TokenTendencyHandleServiceImpl implements TokenTendencyHandleServic
         BirdEyeOHLCVRequest request = BirdEyeOHLCVRequest.builder().address(address).type(ohlcvTypeEnum.getType())
                 .time_from(Objects.isNull(second4fromTime) ? defaultFromTime(ohlcvTypeEnum) : second4fromTime)
                 .time_to(TimeUtil.currentEpochSecond4Minute()).build();
-
+        request.setNetwork(tokenSearchService.tokenNetwork(address));
         BirdEyeOHLCVResponse responseCache = birdEyeApi.oHLCV(request);
 
         if (Objects.nonNull(responseCache) && CollectionUtils.isNotEmpty(responseCache.getItems())) {

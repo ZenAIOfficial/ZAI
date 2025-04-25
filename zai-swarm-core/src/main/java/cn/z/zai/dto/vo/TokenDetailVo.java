@@ -11,6 +11,7 @@ import lombok.Data;
 public class TokenDetailVo implements Serializable {
 
     private Integer id;
+    private String network;
 
     private String coinGeckoId;
 

@@ -1,8 +1,13 @@
 package cn.z.zai.service.impl;
 
+import cn.z.zai.common.constant.RedisCacheConstant;
 import cn.z.zai.common.constant.SmartBotConstant;
+import cn.z.zai.common.enums.TokenNetWorkEnum;
+import cn.z.zai.dto.request.BirdEyeHolderRequest;
 import cn.z.zai.dto.request.BirdEyePriceRequest;
 import cn.z.zai.dto.request.BirdEyeTradeDataSingleRequest;
+import cn.z.zai.dto.request.chat.ZAITextAndOHLCChatContent;
+import cn.z.zai.dto.response.BirdEyeHolderResp;
 import cn.z.zai.dto.response.BirdEyePriceResponse;
 import cn.z.zai.dto.response.BirdEyeTradeDataMultipleResponseItem;
 import cn.z.zai.dto.response.CookieFunContractAddressResp;
@@ -11,9 +16,11 @@ import cn.z.zai.dto.vo.TokenDetailVo;
 import cn.z.zai.dto.vo.TokenTendencyMaxVo;
 import cn.z.zai.service.SmartWalletService;
 import cn.z.zai.service.TokenDetailService;
+import cn.z.zai.service.TokenSearchService;
 import cn.z.zai.service.TokenSyncService;
 import cn.z.zai.service.TokenTendencyHandleService;
 import cn.z.zai.util.NumFormat;
+import cn.z.zai.util.RedisUtil;
 import cn.z.zai.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,6 +32,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,11 +59,16 @@ public class SmartWalletServiceImpl implements SmartWalletService {
     private TokenSyncService tokenSyncService;
 
     @Autowired
+    private TokenSearchService tokenSearchService;
+
+    @Autowired
     private BirdEyeApi birdEyeApi;
 
     @Autowired
     private CookieFunApi cookieFunApi;
 
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Autowired
     @Qualifier("smartWalletExecutor")
@@ -115,6 +128,116 @@ public class SmartWalletServiceImpl implements SmartWalletService {
         return text;
     }
 
+
+    @Override
+    public void buildInfoDetail(SmarterTonBalanceMessage smarterTonBalanceMessage, ZAITextAndOHLCChatContent.InfoDetail infoDetail) {
+
+        if (Objects.isNull(smarterTonBalanceMessage)) {
+            return;
+        }
+        infoDetail.setMindshare(smarterTonBalanceMessage.getMindshare());
+        infoDetail.setFollowersCount(smarterTonBalanceMessage.getFollowersCount());
+        infoDetail.setSmartFollowersCount(smarterTonBalanceMessage.getSmartFollowersCount());
+        infoDetail.setPrice(smarterTonBalanceMessage.getPrice());
+        infoDetail.setPriceStr(NumFormat.formatBigDecimal(smarterTonBalanceMessage.getPrice()));
+        infoDetail.setVolume30mUsd(smarterTonBalanceMessage.getVolume_30m_usd());
+        infoDetail.setVolume30mUsdStr(NumFormat.formatBigDecimal(smarterTonBalanceMessage.getVolume_30m_usd()));
+        infoDetail.setVolume1hUsd(smarterTonBalanceMessage.getVolume_1h_usd());
+        infoDetail.setVolume1hUsdStr(NumFormat.formatBigDecimal(smarterTonBalanceMessage.getVolume_1h_usd()));
+        infoDetail.setVolume8hUsd(smarterTonBalanceMessage.getVolume_8h_usd());
+        infoDetail.setVolume8hUsdStr(NumFormat.formatBigDecimal(smarterTonBalanceMessage.getVolume_8h_usd()));
+        infoDetail.setVolume24hUsd(smarterTonBalanceMessage.getVolume_24h_usd());
+        infoDetail.setVolume24hUsdStr(NumFormat.formatBigDecimal(smarterTonBalanceMessage.getVolume_24h_usd()));
+        List<BigDecimal> priceChange = smarterTonBalanceMessage.getPriceChange();
+
+        int size = org.apache.commons.collections4.CollectionUtils.size(priceChange);
+        if (size >= 1) {
+            infoDetail.setPriceChange1m(priceChange.get(0));
+        }
+        if (size >= 2) {
+            infoDetail.setPriceChange5m(priceChange.get(1));
+        }
+        if (size >= 3) {
+            infoDetail.setPriceChange1h(priceChange.get(2));
+        }
+        if (size >= 4) {
+            infoDetail.setPriceChange12h(priceChange.get(3));
+        }
+        if (size >= 5) {
+            infoDetail.setPriceChange24h(priceChange.get(4));
+        }
+
+        infoDetail.setTop10holding(smarterTonBalanceMessage.getTop10holding());
+        infoDetail.setTop10holdingStr(smarterTonBalanceMessage.getTop10holding() + "%");
+
+        infoDetail.setMktCap(smarterTonBalanceMessage.getMktCap());
+        infoDetail.setMktCapStr(NumFormat.formatBigDecimal(smarterTonBalanceMessage.getMktCap()));
+        infoDetail.setHolders(smarterTonBalanceMessage.getHolders());
+        infoDetail.setHoldersStr(NumFormat.formatBigInteger(smarterTonBalanceMessage.getHolders()));
+        infoDetail.setDeployTime(smarterTonBalanceMessage.getDeployTime());
+        infoDetail.setAllTimeHigh(smarterTonBalanceMessage.getAllTimeHigh());
+        infoDetail.setAllTimeHighStr(NumFormat.formatBigDecimal(smarterTonBalanceMessage.getAllTimeHigh()));
+        infoDetail.setAllTimeHighTime(smarterTonBalanceMessage.getAllTimeHighTime());
+    }
+
+
+    @Override
+    public BirdEyeHolderResp top10holderDetail(String tonAddress, TokenDetailVo tokenDetailVo) {
+
+
+        if (Objects.isNull(tokenDetailVo)) {
+            tokenDetailVo = tokenDetailService.queryWithCache(tonAddress);
+        }
+        long getInterval = RedisCacheConstant.EXPIRE_TIME_OUT_DAY_3;
+        if (Objects.nonNull(tokenDetailVo.getDeployTime())
+                && tokenDetailVo.getDeployTime().compareTo(BigInteger.ZERO) != 0) {
+            LocalDateTime creatDate = TimeUtil.epochSeconds2DateTime(tokenDetailVo.getDeployTime().longValue());
+            LocalDateTime now = LocalDateTime.now();
+            if (creatDate.compareTo(now.minusDays(1)) >= 0) {
+                getInterval = RedisCacheConstant.EXPIRE_TIME_OUT_MINUTE_5;
+            } else if (creatDate.compareTo(now.minusDays(7)) >= 0) {
+                getInterval = RedisCacheConstant.EXPIRE_TIME_OUT_MINUTE_30;
+            } else if (creatDate.compareTo(now.minusMonths(1)) >= 0) {
+                getInterval = RedisCacheConstant.EXPIRE_TIME_OUT_HOUR_1;
+            } else if (creatDate.compareTo(now.minusMonths(5)) >= 0) {
+                getInterval = RedisCacheConstant.EXPIRE_TIME_OUT_HOUR_3;
+            } else if (creatDate.compareTo(now.minusYears(1)) >= 0) {
+                getInterval = RedisCacheConstant.EXPIRE_TIME_OUT_HOUR_8;
+            } else if (creatDate.compareTo(now.minusYears(3)) >= 0) {
+                getInterval = RedisCacheConstant.EXPIRE_TIME_OUT_HOUR_8 * 2;
+            }
+
+        }
+
+        String top10ListKey = String.format(RedisCacheConstant.TOP10_HOLDER_DETAIL, tonAddress);
+        String top10ListDefKey = String.format(RedisCacheConstant.TOP10_HOLDER_DETAIL_DEF, tonAddress);
+
+        BirdEyeHolderResp birdEyeHolderDetail = redisUtil.get(top10ListKey, BirdEyeHolderResp.class);
+        if (Objects.nonNull(birdEyeHolderDetail)) {
+            return birdEyeHolderDetail;
+        }
+
+        BirdEyeHolderRequest birdEyeHolderRequest = new BirdEyeHolderRequest();
+        birdEyeHolderRequest.setAddress(tonAddress);
+        birdEyeHolderRequest.setLimit(10);
+        birdEyeHolderRequest.setOffset(0);
+        birdEyeHolderRequest.setNetwork(tokenSearchService.tokenNetwork(tonAddress));
+        if (!StringUtils.equals(TokenNetWorkEnum.SOLANA.getNetwork(), birdEyeHolderRequest.getNetwork())) {
+            return null;
+        }
+        BirdEyeHolderResp holder = birdEyeApi.holder(birdEyeHolderRequest);
+        if (Objects.nonNull(holder)) {
+            redisUtil.setExSeconds(top10ListKey, holder, getInterval);
+            redisUtil.setExSeconds(top10ListDefKey, holder, RedisCacheConstant.EXPIRE_TIME_OUT_DAY_7);
+            return holder;
+        }
+
+        BirdEyeHolderResp birdEyeHolderDef = redisUtil.get(top10ListDefKey, BirdEyeHolderResp.class);
+        if (Objects.nonNull(birdEyeHolderDef)) {
+            return birdEyeHolderDef;
+        }
+        return null;
+    }
 
     private String priceChangeDesc(List<BigDecimal> priceChangeList) {
 
@@ -203,8 +326,10 @@ public class SmartWalletServiceImpl implements SmartWalletService {
         BigDecimal price = tokenDetailService.tokenPriceLast(tonAddress);
 
         try {
+            BirdEyePriceRequest build = BirdEyePriceRequest.builder().address(tonAddress).build();
+            build.setNetwork(tokenSearchService.tokenNetwork(tonAddress));
             BirdEyePriceResponse onlinePrice =
-                    birdEyeApi.price(BirdEyePriceRequest.builder().address(tonAddress).build());
+                    birdEyeApi.price(build);
             if (onlinePrice != null && Objects.nonNull(onlinePrice.getValue())) {
                 price = onlinePrice.getValue();
                 if (price.scale() > 9) {

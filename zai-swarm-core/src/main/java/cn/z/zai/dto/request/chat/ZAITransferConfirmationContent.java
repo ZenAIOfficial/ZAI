@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 
 @Data
@@ -27,13 +28,19 @@ public class ZAITransferConfirmationContent extends ZAIBaseChatContent {
 
     private BigDecimal needAmount;
 
+    private Integer type;
+
+    private String network;
+
+    private String targetUsername;
+
     private String userAddress;
 
     private String targetAccount;
 
     private String text;
 
-
+    private BigInteger targetUserId;
     /**
      * resp context
      */

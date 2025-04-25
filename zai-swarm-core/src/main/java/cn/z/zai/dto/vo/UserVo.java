@@ -1,11 +1,13 @@
 package cn.z.zai.dto.vo;
 
+import cn.z.zai.dto.entity.UserWalletAddress;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.util.List;
 
 
 @Data
@@ -66,4 +68,7 @@ public class UserVo implements Serializable {
     private Long pointsCoin;
 
     private Boolean inLogOut;
+
+
+    private List<UserWalletAddress> userWalletAddress;
 }

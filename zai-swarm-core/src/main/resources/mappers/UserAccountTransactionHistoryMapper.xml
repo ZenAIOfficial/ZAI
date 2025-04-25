@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.z.zai.dao.UserAccountTransactionHistoryDao">
+
+
+    <insert id="addHistory" useGeneratedKeys="true">
+        insert into user_account_transaction_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="network != null">network,</if>
+            <if test="day != null">day,</if>
+            <if test="tgUserId != null">tg_user_id,</if>
+            <if test="transId != null">trans_id,</if>
+            <if test="transType != null">trans_type,</if>
+            <if test="fromAddress != null">from_address,</if>
+            <if test="toAddress != null">to_address,</if>
+            <if test="tokenAddress != null">token_address,</if>
+            <if test="tokenImage != null">token_image,</if>
+            <if test="free != null">free,</if>
+            <if test="tokenValue != null">token_value,</if>
+            <if test="solChange != null">sol_change,</if>
+            <if test="sendTokenSymbol != null">send_token_symbol,</if>
+            <if test="sendTokenPrice != null">send_token_price,</if>
+            <if test="sendTokenAmount != null">send_token_amount,</if>
+            <if test="sendTokenUiAmount != null">sendTokenUiAmount,</if>
+            <if test="sendTokenValue != null">send_token_value,</if>
+            <if test="sendTokenAddress != null">send_token_address,</if>
+            <if test="receiveTokenSymbol != null">receive_token_symbol,</if>
+            <if test="receiveTokenPrice != null">receive_token_price,</if>
+            <if test="receiveTokenAmount != null">receive_token_amount,</if>
+            <if test="receiveTokenUiAmount != null">receive_token_ui_amount,</if>
+            <if test="receiveTokenValue != null">receive_token_value,</if>
+            <if test="receiveTokenAddress != null">receive_token_address,</if>
+            <if test="appCommission != null">app_commission,</if>
+            <if test="parentCommission != null">parent_commission,</if>
+            <if test="appSolChange != null">app_sol_change,</if>
+            <if test="lastDateTime != null">last_date_time,</if>
+            <if test="parentSolChange != null">parent_sol_change,</if>
+            <if test="markup != null">markup,</if>
+
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="network != null">#{network},</if>
+            <if test="day != null">#{day},</if>
+            <if test="tgUserId != null">#{tgUserId},</if>
+            <if test="transId != null">#{transId},</if>
+            <if test="transType != null">#{transType},</if>
+            <if test="fromAddress != null">#{fromAddress},</if>
+            <if test="toAddress != null">#{toAddress},</if>
+            <if test="tokenAddress != null">#{tokenAddress},</if>
+            <if test="tokenImage != null">#{tokenImage},</if>
+            <if test="free != null">#{free},</if>
+            <if test="tokenValue != null">#{tokenValue},</if>
+            <if test="solChange != null">#{solChange},</if>
+            <if test="sendTokenSymbol != null">#{sendTokenSymbol},</if>
+            <if test="sendTokenPrice != null">#{sendTokenPrice},</if>
+            <if test="sendTokenAmount != null">#{sendTokenAmount},</if>
+            <if test="sendTokenUiAmount != null">#{send_token_ui_amount},</if>
+            <if test="sendTokenValue != null">#{sendTokenValue},</if>
+            <if test="sendTokenAddress != null">#{sendTokenAddress},</if>
+            <if test="receiveTokenSymbol != null">#{receiveTokenSymbol},</if>
+            <if test="receiveTokenPrice != null">#{receiveTokenPrice},</if>
+            <if test="receiveTokenAmount != null">#{receiveTokenAmount},</if>
+            <if test="receiveTokenUiAmount != null">#{receiveTokenUiAmount},</if>
+            <if test="receiveTokenValue != null">#{receiveTokenValue},</if>
+            <if test="receiveTokenAddress != null">#{receiveTokenAddress},</if>
+            <if test="appCommission != null">#{appCommission},</if>
+            <if test="parentCommission != null">#{parentCommission},</if>
+            <if test="appSolChange != null">#{appSolChange},</if>
+            <if test="lastDateTime != null">#{lastDateTime},</if>
+            <if test="parentSolChange != null">#{parentSolChange},</if>
+            <if test="markup != null">#{markup},</if>
+        </trim>
+    </insert>
+
+
+    <select id="getTransId" resultType="java.lang.String">
+        select trans_id transId
+
+        from user_account_transaction_history
+        where tg_user_id = #{tgUserId}
+          and trans_id = #{transId} and is_deleted = 0
+    </select>
+
+    <select id="lastTransId" resultType="java.lang.String">
+
+        select trans_id transId
+        from user_account_transaction_history
+        where tg_user_id = #{tgUserId}
+          and is_deleted = 0
+          and network = 'solana'
+          and last_date_time = (select MAX(last_date_time) times
+
+                                from user_account_transaction_history
+                                where tg_user_id = #{tgUserId}
+                                  and network = 'solana'
+                                  and is_deleted = 0)
+
+    </select>
+
+    <select id="getTransactionHistoryListGroup" resultType="cn.z.zai.dto.vo.UserTokenTransactionHistoryGroup">
+
+        SELECT trans_id AS transId,
+               tg_user_id  tgUserId,
+              network network,
+            `day` as day,
+            `free` as free,
+            token_value value,
+            token_image image,
+            trans_type type,
+            token_address tokenAddress,
+            send_token_value sendTokenValue,
+            send_token_symbol sendTokenSymbol,
+            send_token_address sendTokenAddress,
+            send_token_amount sendTokenAmount,
+            receive_token_symbol receiveTokenSymbol,
+            receive_token_address receiveTokenAddress,
+            receive_token_amount receiveTokenAmount,
+            last_date_time AS createdTime,
+            app_sol_change appSolChange,
+            parent_sol_change parentSolChange,
+            markup markup
+        FROM
+            user_account_transaction_history
+        WHERE
+            is_deleted = 0
+          AND tg_user_id = #{tgUserId}
+        <if test="network != null">
+            and network = #{network}
+        </if>
+          and is_deleted = 0 and markup != 1
+          AND (
+            (
+            trans_type = 4
+          AND (
+            ( token_address = 'So11111111111111111111111111111111111111111'
+          AND sol_change
+            > 100 )
+           OR ( token_address = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+          AND receive_token_amount
+            > 1 )
+           OR ( token_address != 'So11111111111111111111111111111111111111111'
+          AND token_address != 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' )
+            )
+            )
+           OR trans_type != 4
+            )
+          AND trans_type != 5
+        ORDER BY
+            last_date_time DESC, created_time DESC
+    </select>
+
+
+    <delete id="delInfoByUserId">
+        delete from user_account_transaction_history
+        where tg_user_id = #{tgUserId}
+    </delete>
+    <select id="getBuySellNum" resultType="java.lang.Long">
+
+        SELECT sum(1)
+        FROM user_account_transaction_history
+        WHERE tg_user_id = #{tgUserId}
+          and trans_type in (1, 2)
+    </select>
+    <select id="getFirstBoughtRecord" resultType="cn.z.zai.dto.entity.UserAccountTransactionHistory">
+        select tg_user_id as tgUserId,trans_id as transId,last_date_time as lastDateTime
+        from user_account_transaction_history
+        where tg_user_id = #{tgUserId}
+          and token_address = #{tokenAddress}
+        order by id asc
+        limit 1
+    </select>
+
+</mapper>

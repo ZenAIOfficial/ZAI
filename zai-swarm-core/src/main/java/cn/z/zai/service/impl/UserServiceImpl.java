@@ -88,13 +88,13 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public void updateLamports(BigInteger tgUserId, Long lamports) {
+    public Boolean updateLamports(BigInteger tgUserId, Long lamports) {
         if (Objects.isNull(lamports)) {
-            return;
+            return false;
         }
         UserVo userVo = getUserByTgUserId(tgUserId);
         if (Objects.isNull(userVo) || Objects.isNull(userVo.getLamports())) {
-            return;
+            return false;
         }
 
         if (userVo.getLamports().compareTo(lamports) != 0) {
@@ -102,7 +102,9 @@ public class UserServiceImpl implements UserService {
             temp.setTgUserId(tgUserId);
             temp.setLamports(lamports);
             updateUser(temp);
+            return true;
         }
+        return false;
     }
 
     @Override

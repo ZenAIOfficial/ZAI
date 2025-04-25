@@ -4,12 +4,14 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 
 @Data
 public class UserTokenVo implements Serializable {
 
+    private String network;
     private String address;
 
     private String name;
@@ -18,7 +20,9 @@ public class UserTokenVo implements Serializable {
 
     private String image;
 
-    private Long amount;
+    private BigInteger amount;
+
+    private String amountStr;
 
     private Integer decimals;
 

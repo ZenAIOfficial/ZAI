@@ -94,6 +94,8 @@ public class SmarterTonBalanceMessage implements Serializable {
     private String description;
 
     private String imageUrl;
+
+    private BigDecimal top10holding;
     @Data
     public static class ShowSmart {
 

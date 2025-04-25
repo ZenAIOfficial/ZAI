@@ -14,4 +14,6 @@ public class BasePageSo {
 
     @ApiModelProperty(name = "pageSize",notes = "pageSize")
     private Integer pageSize = 10;
+
+    private String network;
 }

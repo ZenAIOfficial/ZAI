@@ -12,7 +12,9 @@ public class UserToken extends BaseEntity{
 
     private BigInteger tgUserId;
 
+    private String network;
+
     private String address;
 
-    private Long amount;
+    private BigInteger amount;
 }

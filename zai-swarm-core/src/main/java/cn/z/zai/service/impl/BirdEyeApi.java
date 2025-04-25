@@ -3,16 +3,21 @@ package cn.z.zai.service.impl;
 import cn.z.zai.common.constant.BirdEyeApiConstant;
 import cn.z.zai.common.constant.RedisCacheConstant;
 import cn.z.zai.common.enums.ApiKeyTypeEnum;
+import cn.z.zai.dto.request.BirdEyeBaseReq;
 import cn.z.zai.dto.request.BirdEyeCreationTokenInfoRequest;
+import cn.z.zai.dto.request.BirdEyeHolderRequest;
 import cn.z.zai.dto.request.BirdEyeOHLCVRequest;
 import cn.z.zai.dto.request.BirdEyePriceRequest;
+import cn.z.zai.dto.request.BirdEyeSearchRequest;
 import cn.z.zai.dto.request.BirdEyeTokenOverviewRequest;
 import cn.z.zai.dto.request.BirdEyeTokenSecurityRequest;
 import cn.z.zai.dto.request.BirdEyeTradeDataSingleRequest;
 import cn.z.zai.dto.response.BirdEyeCreationTokenInfoResponse;
+import cn.z.zai.dto.response.BirdEyeHolderResp;
 import cn.z.zai.dto.response.BirdEyeOHLCVResponse;
 import cn.z.zai.dto.response.BirdEyePriceResponse;
 import cn.z.zai.dto.response.BirdEyeResponse;
+import cn.z.zai.dto.response.BirdEyeSearchResp;
 import cn.z.zai.dto.response.BirdEyeTokenOverviewResponse;
 import cn.z.zai.dto.response.BirdEyeTokenSecurityResponse;
 import cn.z.zai.dto.response.BirdEyeTradeDataMultipleResponseItem;
@@ -37,6 +42,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
@@ -97,10 +103,32 @@ public class BirdEyeApi implements BirdEyeApiConstant {
         return responses;
     }
 
-    private <T> T responseByRemote(String url,Object request,ParameterizedTypeReference<BirdEyeResponse<T>> responseType) {
+
+
+    /**
+     * search token
+     */
+    public BirdEyeSearchResp search(BirdEyeSearchRequest request){
+        BirdEyeSearchResp responses =
+                responseByRemote(TOKEN_SEARCH_URL_GET, request, new ParameterizedTypeReference<BirdEyeResponse<BirdEyeSearchResp>>() {});
+        return responses;
+    }
+
+    /**
+     * Get top holder list of the given token
+     * @param request
+     * @return
+     */
+    public BirdEyeHolderResp holder(BirdEyeHolderRequest request){
+        BirdEyeHolderResp responses =
+                responseByRemote(TOKEN_HOLDER_URL_GET, request, new ParameterizedTypeReference<BirdEyeResponse<BirdEyeHolderResp>>() {});
+        return responses;
+    }
+
+    private <T> T responseByRemote(String url,BirdEyeBaseReq request,ParameterizedTypeReference<BirdEyeResponse<T>> responseType) {
         String apiKey = apiKeyDetailService.apiKey(ApiKeyTypeEnum.BIRD_EYE.getType());
         try{
-            HttpEntity<Object> httpEntity = packageHeaders(apiKey);
+            HttpEntity<Object> httpEntity = packageHeaders(apiKey, request);
             HashMap hashMap = jsonUtil.string2Obj(jsonUtil.obj2String(request), HashMap.class);
             ResponseEntity<BirdEyeResponse<T>> exchange = restTemplate.exchange(
                     packageUrlParam(url, hashMap),
@@ -167,19 +195,27 @@ public class BirdEyeApi implements BirdEyeApiConstant {
         return baseUrl;
     }
 
-    private HttpEntity<Object> packageHeaders(String apiKey) {
+    private HttpEntity<Object> packageHeaders(String apiKey, BirdEyeBaseReq request) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_JSON_VALUE);
         headers.set(HEADER_API_KEY_NAME, apiKey);
-        headers.set(HEADER_X_CHAIN_KEY_NAME, HEADER_X_CHAIN_KEY_VALUE);
+        if (Objects.nonNull(request) && StringUtils.isNotEmpty(request.getNetwork())) {
+            headers.set(HEADER_X_CHAIN_KEY_NAME, request.getNetwork());
+        } else {
+            headers.set(HEADER_X_CHAIN_KEY_NAME, HEADER_X_CHAIN_KEY_VALUE);
+        }
         return new HttpEntity<>(headers);
     }
 
-    private HttpEntity<Object> packageHeaders(Map<String,Object> body,String apiKey) {
+    private HttpEntity<Object> packageHeaders(Map<String,Object> body,String apiKey , BirdEyeBaseReq request) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_JSON_VALUE);
         headers.set(HEADER_API_KEY_NAME, apiKey);
-        headers.set(HEADER_X_CHAIN_KEY_NAME, HEADER_X_CHAIN_KEY_VALUE);
+        if (Objects.nonNull(request) && StringUtils.isNotEmpty(request.getNetwork())) {
+            headers.set(HEADER_X_CHAIN_KEY_NAME, request.getNetwork());
+        } else {
+            headers.set(HEADER_X_CHAIN_KEY_NAME, HEADER_X_CHAIN_KEY_VALUE);
+        }
         return new HttpEntity<>(body,headers);
     }
 }

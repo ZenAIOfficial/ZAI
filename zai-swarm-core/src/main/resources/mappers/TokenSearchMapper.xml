@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.z.zai.dao.TokenSearchDao">
+
+    <insert id="addTokenSearch" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO token_search
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="address != null">address,</if>
+            <if test="network != null">network,</if>
+            <if test="name != null">name,</if>
+            <if test="symbol != null">symbol,</if>
+            <if test="logoUri != null">logo_uri,</if>
+            <if test="decimals != null">decimals,</if>
+            <if test="hitAddress != null">hit_address,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="address != null">#{address},</if>
+            <if test="network != null">#{network},</if>
+            <if test="name != null">#{name},</if>
+            <if test="symbol != null">#{symbol},</if>
+            <if test="logoUri != null">#{logoUri},</if>
+            <if test="decimals != null">#{decimals},</if>
+            <if test="hitAddress != null">#{hitAddress},</if>
+        </trim>
+    </insert>
+
+
+    <select id="getTokenSearch" resultType="cn.z.zai.dto.entity.TokenSearch">
+        select address, network, `name`, symbol, logo_uri logoUri,decimals
+        from token_search
+        where address = #{address}
+          and is_deleted = 0
+    </select>
+
+
+</mapper>

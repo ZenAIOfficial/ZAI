@@ -49,7 +49,7 @@ public class UserAccountConsumer {
                     log.warn("UserAccountConsumer address is empty not need process");
                     return;
                 }
-                userTokenSyncService.syncUserAccount(userId, userVo.getAddress());
+                userTokenSyncService.syncUserAccount(userId);
                 ack.acknowledge();
             } catch (Exception e) {
                 log.error("logProcess error who={} , error message is {}", message, e.getMessage());

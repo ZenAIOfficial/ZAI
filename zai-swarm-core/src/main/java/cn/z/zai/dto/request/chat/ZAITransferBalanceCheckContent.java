@@ -25,5 +25,7 @@ public class ZAITransferBalanceCheckContent extends ZAIBaseChatContent {
 
     private BigDecimal needCoin;
 
+    private String network;
+
     private String text;
 }

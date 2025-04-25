@@ -6,9 +6,9 @@ import java.math.BigInteger;
 
 public interface UserTokenSyncService {
 
-    void syncUserAccount(BigInteger tgUserId, String address);
+    void syncUserAccount(BigInteger tgUserId);
 
-    void syncUserTokenListNew(BigInteger tgUserId, String walletAddress);
+    void syncUserTokenListNew(BigInteger tgUserId);
 
-
+    void syncUserAccountTransactionHistoryList(BigInteger tgUserId);
 }

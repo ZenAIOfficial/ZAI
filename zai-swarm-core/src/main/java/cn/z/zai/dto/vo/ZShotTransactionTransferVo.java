@@ -34,5 +34,5 @@ public class ZShotTransactionTransferVo {
 
     private Boolean isMax;
 
-    private BigInteger tgUserId;
+    private String tgUserId;
 }

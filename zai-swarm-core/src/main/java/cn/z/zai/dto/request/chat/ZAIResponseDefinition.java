@@ -14,6 +14,7 @@ public class ZAIResponseDefinition {
 
     private String ca;
 
+    private String type;
     private String tokenName;
 
     private BigDecimal solAmount;

@@ -36,8 +36,8 @@ public class AIController {
     private AiBusinessService aiBusinessService;
 
     @UnSignAndEncrypt
-    @GetMapping(path = "/chat",produces = {MediaType.TEXT_EVENT_STREAM_VALUE})
-    public SseEmitter streamChat(ZAIChatRequest request) {
+    @PostMapping(path = "/chat",produces = {MediaType.TEXT_EVENT_STREAM_VALUE})
+    public SseEmitter streamChatPost(@RequestBody ZAIChatRequest request) {
         //3min
         request.setTgUserId(ContextHolder.getUserId());
         String messageId = request.getMessageId();

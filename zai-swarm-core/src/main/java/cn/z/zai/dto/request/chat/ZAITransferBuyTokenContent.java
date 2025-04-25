@@ -26,8 +26,11 @@ public class ZAITransferBuyTokenContent extends ZAIBaseChatContent {
 
     private BigDecimal needSol;
 
+    private String needAmount;
+
     private String text;
 
+    private String network;
 
     /**
      * resp context

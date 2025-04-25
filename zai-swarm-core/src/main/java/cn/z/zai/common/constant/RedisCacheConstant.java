@@ -20,6 +20,46 @@ public final class RedisCacheConstant {
 
 
     /**
+     * %{userId}
+     */
+    public static final String SYNC_SIGNATURES_LOCK = "zShort:signatures:lock:%s:%s";
+
+    /**
+     * %{userId}:%{network}
+     */
+    public static final String SYNC_BALANCE_LOCK = "zShort:balance:lock:%s:%s";
+    /**
+     * %{userId}:%{network}
+     */
+    public static final String SYNC_TOKENS_LOCK = "zShort:tokens:lock:%s:%s";
+    /**
+     * tokenTrending:lastTime
+     */
+    public static final String TOKEN_TRENDING_NETWORK_LAST_TIME_KEY = "tokenTrending4Network:lastTime:%s";
+
+    public static final Long TOKEN_TRENDING_LAST_TIME_KEY_TIMEOUT = 60 * 60 * 24 * 1L;
+
+    /**
+     * #{address}.analyze infoDetail
+     */
+    public static final String ADDRESS_INFO_DETAIL = "analyze:detail:%s";
+
+    public static final String SIGNATURES_FOR_ADDRESS = "signatures:address:%s";
+
+    public static final String BUY_SELL_NUM = "ts:bsNum:%s";
+
+    /**
+     * address
+     */
+    public static final String TOP10_HOLDER_DETAIL = "token:top:list:%s";
+
+    /**
+     * address
+     */
+    public static final String TOP10_HOLDER_DETAIL_DEF = "token:top:def:%s";
+
+
+    /**
      * api:keyLimit:${type}:${apiKey}
      * @see cn.z.zai.common.enums.ApiKeyTypeEnum
      */
@@ -86,6 +126,10 @@ public final class RedisCacheConstant {
     public static final String USER_TOKEN_LIST_UPDATE_KEY = "user:tokenUpdate:%s";
 
 
+    /**
+     * be:price:${address}
+     */
+    public static final String BIRD_EYE_PRICE_DATA_KEY = "be:priceData:%s";
 
 
 
@@ -96,14 +140,20 @@ public final class RedisCacheConstant {
     public static final String USER_ACCOUNT_INCREASE_RATE = "userAccountIncRate:%s";
 
 
-
+    /**
+     * userId:transactionId
+     */
+    public static final String WEBBOT_TRANSACTION_LOG = "webBot:ts:%s:%s";
 
     /**
      * OHLCV:list:${address}:${ohlcvType}:{time}
      */
     public static final String OHLCV_TENDENCY_COMMON_KEY = "OHLCV:lsc:%s:%s:%s";
 
-
+    /**
+     * userId:transactionId
+     */
+    public static final String WEBBOT_TRANSACTION_NETWORK = "webBot:netWork:%s:%s";
 
     /**
      *OHLCV_EXIST:${address}:${timeType}
@@ -134,7 +184,40 @@ public final class RedisCacheConstant {
      */
     public static final String LIMIT_SESSION_NUM = "limit:session:num:%s:%s";
 
+    public static final String TOKEN_SEARCH = "tokenSearch:%s";
 
+    /**
+     * slippage
+     */
+    public static final String SLIPPAGE_INFO = "slippage:info:%s";
+
+    public static final String USER_ACCOUNT_TRANSACTION_MSG_SEND_PROTECT = "transaction:msg:protect:%s";
+
+
+    /**
+     * 2 Seconds
+     */
+    public static final Long EXPIRE_TIME_OUT_SECOND_2 = 2L;
+
+    /**
+     * 3 Seconds
+     */
+    public static final Long EXPIRE_TIME_OUT_SECOND_3 = 3L;
+
+    /**
+     * 5 Seconds
+     */
+    public static final Long EXPIRE_TIME_OUT_SECOND_5 = 5L;
+
+    /**
+     * 5 Minute
+     */
+    public static final Long EXPIRE_TIME_OUT_MINUTE_5 = 60L * 5;
+
+    /**
+     * 30 Minute
+     */
+    public static final Long EXPIRE_TIME_OUT_MINUTE_30 = 60L * 30;
 
     /**
      * 7 days
@@ -156,8 +239,15 @@ public final class RedisCacheConstant {
      */
     public static final Long EXPIRE_TIME_OUT_DAY_1 = 60 * 60 * 24L;
 
+    /**
+     * 3 hour
+     */
+    public static final Long EXPIRE_TIME_OUT_HOUR_3 = 60 * 60 * 3L;
 
-
+    /**
+     * 8 hour
+     */
+    public static final Long EXPIRE_TIME_OUT_HOUR_8 = 60 * 60 * 8L;
 
     /**
      * 1 hour

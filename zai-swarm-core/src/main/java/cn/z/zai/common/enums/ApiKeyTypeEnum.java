@@ -11,8 +11,11 @@ public enum ApiKeyTypeEnum {
 
     BIRD_EYE(2),
 
-    QUICK_NODE(3);
+    QUICK_NODE(3),
 
+    ETHER_SCAN(4),
+
+    QUICK_NODE_BNB(5);
     private final Integer type;
 
     public static ApiKeyTypeEnum findByType(int type){

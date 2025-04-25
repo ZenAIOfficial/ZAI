@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Data
@@ -29,6 +30,9 @@ public class TokenDetailSo extends BasePageSo {
     private String category;
 
     private BigInteger tgUserId;
+
+
+    private List<BigInteger> list;
 
     private BigInteger trendingLastTimestamp;
 

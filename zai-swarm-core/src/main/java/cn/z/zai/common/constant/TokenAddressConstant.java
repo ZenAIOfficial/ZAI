@@ -11,6 +11,7 @@ public final class TokenAddressConstant {
 
     public static final BigDecimal USDC_PRICE = BigDecimal.ONE;
 
+    public static final Integer USDC_DECIMALS = 6;
     /**
      * WSOL
      */

@@ -2,12 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.z.zai.dao.UserTokenDao">
 
+    <select id="queryByAddressAndTgUserId" resultType="cn.z.zai.dto.vo.UserTokenVo">
+        <bind name="finalNetwork" value="network == null ? 'solana' : network"/>
+        select address, amount, network
+        from user_token
+        where tg_user_id = #{tgUserId} and address = #{address} and is_deleted = 0
+        <if test="finalNetwork != null">
+            and network = #{finalNetwork}
+        </if>
+    </select>
     <select id="getTokenList" resultType="cn.z.zai.dto.vo.UserTokenVo">
         select ut.amount as amount, td.name as name, td.address as address, td.symbol as symbol,   CASE WHEN td.oss_image = '' or td.oss_image = null THEN td.image ELSE td.oss_image END AS image, td.price as price, td.decimals as decimals
         from user_token ut
         inner join token_detail td on td.address = ut.address
         where ut.tg_user_id = #{tgUserId} and ut.is_deleted = 0
         and ut.amount > 0
+        <if test="network != null">
+            and td.network = #{network}
+        </if>
     </select>
 
 
@@ -15,6 +27,9 @@
     <delete id="deleteTokenList">
         delete from user_token
         where tg_user_id = #{tgUserId}
+        <if test="finalNetwork != null">
+            and network = #{finalNetwork}
+        </if>
     </delete>
 
 
@@ -26,5 +41,22 @@
         </foreach>
     </insert>
 
+
+    <delete id="deleteTokenDetail">
+        <bind name="finalNetwork" value="network == null ? 'solana' : network"/>
+        delete from user_token
+        where tg_user_id = #{tgUserId}
+        and address = #{address}
+        <if test="finalNetwork != null">
+            and network = #{finalNetwork}
+        </if>
+    </delete>
+
+    <update id="batchUpdate">
+        <foreach collection="updateList" item="item" separator=";">
+            update user_token set amount = #{item.amount}
+            where tg_user_id = #{item.tgUserId} and address = #{item.address} and is_deleted = 0
+        </foreach>
+    </update>
 
 </mapper>

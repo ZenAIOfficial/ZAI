@@ -50,4 +50,17 @@ public interface BirdEyeApiConstant {
      * @link {https://docs.birdeye.so/reference/get_defi-token-security}
      */
     String TOKEN_SECURITY_URL_GET = BASE + "/defi/token_security";
+
+
+    /**
+     * @link {https://public-api.birdeye.so/defi/v3/token/holder}
+     */
+
+    String TOKEN_HOLDER_URL_GET = BASE + "/defi/v3/token/holder";
+
+
+    /**
+     * @link {https://docs.birdeye.so/reference/get_defi-v3-search}
+     */
+    String TOKEN_SEARCH_URL_GET = BASE + "/defi/v3/search";
 }

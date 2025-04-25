@@ -47,8 +47,7 @@ public class UserTokenConsumer {
                     ack.acknowledge();
                     return;
                 }
-                //userTokenSyncService.syncUserTokenList(userId, userVo.getAddress());
-                userTokenSyncService.syncUserTokenListNew(userId, userVo.getAddress());
+                userTokenSyncService.syncUserTokenListNew(userId);
                 ack.acknowledge();
             } catch (Exception e) {
                 log.error("UserTokenConsumer error who={} , error message is {}", message, e.getMessage());

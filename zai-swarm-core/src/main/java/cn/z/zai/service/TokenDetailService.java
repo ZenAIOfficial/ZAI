@@ -1,6 +1,10 @@
 package cn.z.zai.service;
 
+import cn.z.zai.dto.so.TokenDetailSo;
 import cn.z.zai.dto.vo.TokenDetailVo;
+import cn.z.zai.dto.vo.TokenDetailWithSecurityVo;
+import cn.z.zai.dto.vo.TokenDetailWithUserTokenVo;
+import com.github.pagehelper.PageInfo;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,4 +29,12 @@ public interface TokenDetailService {
 
 
     TokenDetailVo queryCacheWithAsync(String address);
+
+    void batchUpdateTokenByAddress(List<TokenDetailVo> voList);
+
+    TokenDetailWithUserTokenVo tokenDetailWithUserTokenInfo(TokenDetailSo so);
+
+    PageInfo<TokenDetailWithSecurityVo> queryTokenWithPageNew(TokenDetailSo so);
+
+    List<TokenDetailVo> searchByAddressOrSymbol(TokenDetailSo so);
 }

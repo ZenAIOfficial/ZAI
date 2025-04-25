@@ -1,6 +1,7 @@
 package cn.z.zai.service;
 
 import cn.z.zai.dto.response.BirdEyeCreationTokenInfoResponse;
+import cn.z.zai.dto.response.BirdEyePriceResponse;
 import cn.z.zai.dto.response.BirdEyeTokenOverviewResponse;
 import cn.z.zai.dto.response.QuickNodeResponseTokenAccountsByOwnerItemValueAccountDataParsedInfo;
 import cn.z.zai.dto.vo.TokenDetailVo;
@@ -28,5 +29,9 @@ public interface TokenSyncService {
     //==========QuickNode========
     List<QuickNodeResponseTokenAccountsByOwnerItemValueAccountDataParsedInfo> syncAccountTokens(String walletAddress);
 
+
+
+
+    BirdEyePriceResponse asyncBirdEyePriceRealTime(String address);
 
 }

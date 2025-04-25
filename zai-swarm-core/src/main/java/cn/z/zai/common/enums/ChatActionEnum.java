@@ -12,7 +12,7 @@ public enum ChatActionEnum {
 
     TOKEN_DETAIL("tokenDetail"),
 
-
+    TOKEN_DETAIL_HTML("tokenDetailHtml"),
 
     TOKEN_INFO("tokenInfo"),
 
@@ -21,6 +21,8 @@ public enum ChatActionEnum {
     BUY_TOKEN("buyToken"),
     SELL_TOKEN("sellToken"),
     TRANSFER_CONFIRMATION("transferConfirmation"),
+
+    TOP_UP("topUp"),
 
 
     STOP("stop"),

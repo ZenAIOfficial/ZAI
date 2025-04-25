@@ -14,7 +14,7 @@ public interface UserService {
     UserVo auth(AuthSo authSo);
 
 
-    void updateLamports(BigInteger tgUserId, Long lamports);
+    Boolean updateLamports(BigInteger tgUserId, Long lamports);
 
     UserVo getUserByTgUserId(BigInteger tgUserId);
 

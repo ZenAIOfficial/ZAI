@@ -156,9 +156,137 @@
     </select>
 
 
+    <update id="batchUpdateTokenDetail">
+        <foreach collection="voList" separator=";" item="vo" >
+            update token_detail
+            <set>
+                <if test="vo.network != null"> network = #{network},</if>
+                <if test="vo.coinGeckoId != null"> coin_gecko_id = #{vo.coinGeckoId},</if>
+                <if test="vo.name != null"> name = #{vo.name},</if>
+                <if test="vo.symbol != null"> symbol = #{vo.symbol},</if>
+                <if test="vo.image != null"> image = #{vo.image},</if>
+                <if test="vo.ossImage != null"> oss_image = #{vo.ossImage},</if>
+                <if test="vo.ossed != null"> ossed = #{vo.ossed},</if>
+                <if test="vo.mktCap != null"> mkt_cap = #{vo.mktCap},</if>
+                <if test="vo.description != null"> description = #{vo.description},</if>
+                <if test="vo.totalSupply != null"> total_supply = #{vo.totalSupply},</if>
+                <if test="vo.decimals != null"> decimals = #{vo.decimals},</if>
+                <if test="vo.holders != null"> holders = #{vo.holders},</if>
+                <if test="vo.deployTime != null"> deploy_time = #{vo.deployTime},</if>
+                <if test="vo.price != null">
+                    price = #{vo.price},
+                    mkt_cap = total_supply * #{vo.price},
+                </if>
+                <if test="vo.liquidity != null"> liquidity = #{vo.liquidity},</if>
+                <if test="vo.twitterScreenName != null"> twitter_screen_name = #{vo.twitterScreenName},</if>
+                <if test="vo.volumePast24h != null"> volume_past_24h = #{vo.volumePast24h},</if>
+                <if test="vo.price24hChange != null"> price_24h_change = #{vo.price24hChange},</if>
+                <if test="vo.circulatingSupply != null"> circulating_supply = #{vo.circulatingSupply},</if>
+                <if test="vo.category != null"> category = #{vo.category},</if>
+                <if test="vo.lastTimestamp != null"> last_timestamp = #{vo.lastTimestamp},</if>
+                <if test="vo.lastDateTime != null"> last_date_time = #{vo.lastDateTime},</if>
+                <if test="vo.showStatus != null"> show_status = #{vo.showStatus},</if>
+                <if test="vo.extensions != null"> extensions = #{vo.extensions},</if>
+                <if test="vo.lastShowDateTime != null"> last_show_date_time = #{vo.lastShowDateTime},</if>
+                <if test="vo.hidden != null"> hidden = #{vo.hidden},</if>
+                <if test="vo.manualEditor != null"> manual_editor = #{vo.manualEditor},</if>
+            </set>
+            where address = #{vo.address}
+        </foreach>
+    </update>
 
+    <select id="queryListByTabType" resultMap="VoWithSecurityMap">
 
-
+        <if test="tabType == 1">
+            select td.address,td.name,td.symbol, td.network network,
+            CASE WHEN td.oss_image = '' or td.oss_image = null THEN td.image ELSE td.oss_image END AS image,
+            td.mkt_cap,td.holders,td.price,td.liquidity,td.extensions,td.price_24h_change,td.volume_past_24h,td.deploy_time,tsd.alarm
+            from  user_token_watch utw
+            inner join token_detail td on utw.address = td.address
+            left join token_security_detail tsd on utw.address = tsd.address
+            where utw.is_deleted = 0 and td.is_deleted = 0 and td.show_status = 1 and td.hidden = 0
+            and utw.address not in ('So11111111111111111111111111111111111111111'
+            ,'So11111111111111111111111111111111111111112'
+            ,'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v','0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c','0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+            and utw.tg_user_id = #{tgUserId}  and utw.is_deleted = 0
+            <if test="network != null">
+                and td.network = #{network}
+            </if>
+            order by
+            <if test="'asc'.equals(nameSort)">
+                td.symbol asc,
+            </if>
+            <if test="'desc'.equals(nameSort)">
+                td.symbol desc,
+            </if>
+            <if test="'asc'.equals(volSort)">
+                td.volume_past_24h asc,
+            </if>
+            <if test="'desc'.equals(volSort)">
+                td.volume_past_24h desc,
+            </if>
+            <if test="'asc'.equals(price24hChangeSort)">
+                td.price_24h_change asc,
+            </if>
+            <if test="'desc'.equals(price24hChangeSort)">
+                td.price_24h_change desc,
+            </if>
+            utw.id desc
+        </if>
+        <if test="tabType == 2">
+            select tt.id, td.address,td.name,td.symbol,td.network network,
+            CASE WHEN td.oss_image = '' or td.oss_image = null THEN td.image ELSE td.oss_image END AS image,
+            td.mkt_cap,td.holders,td.price,td.liquidity,td.extensions,td.price_24h_change ,td.volume_past_24h,td.deploy_time,tsd.alarm
+            from  token_trending tt
+            inner join token_detail td on tt.address = td.address
+            left join token_security_detail tsd on tt.address = tsd.address
+            where  tsd.alarm &lt;= 1
+            and tt.is_deleted = 0 and td.is_deleted = 0 and td.show_status = 1 and td.hidden = 0
+            and tt.address not in ('So11111111111111111111111111111111111111111','So11111111111111111111111111111111111111112','EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+            <if test="list != null and list.size > 0">
+                AND tt.last_timestamp IN
+                <foreach collection="list" item="timestamp" open="(" separator="," close=")">
+                    #{timestamp}
+                </foreach>
+            </if>
+            and td.volume_past_24h > 0
+            <if test="network != null">
+                and td.network = #{network}
+            </if>
+            order by tt.id
+        </if>
+        <if test="tabType > 2">
+            select td.id,td.address,td.name,td.symbol,td.network network,
+            CASE WHEN td.oss_image = '' or td.oss_image = null THEN td.image ELSE td.oss_image END AS image,
+            td.mkt_cap,td.holders,td.price,td.liquidity,td.extensions,td.price_24h_change,td.volume_past_24h,td.deploy_time,tsd.alarm
+            from  token_detail td
+            left join token_security_detail tsd on td.address = tsd.address
+            where tsd.alarm &lt;= 1
+            and td.address not in ('So11111111111111111111111111111111111111111','So11111111111111111111111111111111111111112','EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+            and td.is_deleted = 0 and td.show_status = 1 and td.hidden = 0
+            and td.volume_past_24h > 0
+            <if test="network != null">
+                and td.network = #{network}
+            </if>
+            <if test="tabType == 3">
+                order by td.price_24h_change desc
+            </if>
+            <if test="tabType == 4">
+                order by td.price_24h_change asc
+            </if>
+            <if test="tabType == 5">
+                and td.mkt_cap >= 50000
+                and td.deploy_time > 0
+                order by td.deploy_time desc
+            </if>
+            <if test="tabType == 6">
+                order by td.volume_past_24h desc
+            </if>
+            <if test="tabType == 7">
+                order by td.mkt_cap desc
+            </if>
+        </if>
+    </select>
 
 
 </mapper>

@@ -12,12 +12,16 @@ import java.util.List;
 @Repository
 public interface UserTokenDao {
 
+    UserTokenVo queryByAddressAndTgUserId(BigInteger tgUserId, String address, String network);
+    List<UserTokenVo> getTokenList(BigInteger tgUserId, String network);
 
-    List<UserTokenVo> getTokenList(BigInteger tgUserId);
 
-
-    void deleteTokenList(BigInteger tgUserId);
+    void deleteTokenList(BigInteger tgUserId, String network);
 
     void insertTokenList(List<UserToken> tokenList);
+
+    void deleteTokenDetail(BigInteger tgUserId, String address, String network);
+
+    void batchUpdate(List<UserToken> updateList);
 
 }

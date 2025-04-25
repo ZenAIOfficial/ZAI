@@ -10,9 +10,11 @@ This Spring Boot application demonstrates the integration of Sol trading and GPT
 - redis redisson 3.14.1
 ## Transaction and Coin Information
 
+Supports transaction parsing on Solana and Binance Smart Chain (BSC).
+
 Information collection source.<br> Multi platform collection ensures accurate and secure data<br> 
 <li>Collect coin prices and information using birdeye
 <li>Collect ranking, attention, and other information using CookieFun
 <li>Collect transaction pair information using Jupiter, etc
-<li>Using QuickNode to retrieve on chain data
+<li>Using QuickNode / EtherScan(BscScan) to retrieve on chain data
 <li>Using QuickIntel to obtain token security information

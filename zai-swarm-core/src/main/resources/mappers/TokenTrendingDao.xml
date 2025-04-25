@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.z.zai.dao.TokenTrendingDao">
+
+    <resultMap id="VoMap" type="cn.z.zai.dto.vo.TokenTrendingVo">
+        <result column="network" property="network"/>
+        <result column="name" property="name"/>
+        <result column="address" property="address"/>
+        <result column="symbol" property="symbol"/>
+        <result column="decimals" property="decimals"/>
+        <result column="last_timestamp" property="lastTimestamp"/>
+        <result column="last_date_time" property="lastDateTime"/>
+    </resultMap>
+
+    <insert id="addBatch" >
+        INSERT INTO token_trending
+        (network, name,address,symbol,decimals,last_timestamp,last_date_time)
+        values
+        <foreach collection="voList" item="vo" separator="," >
+            (#{vo.network},#{vo.name},#{vo.address},#{vo.symbol},#{vo.decimals},#{vo.lastTimestamp},#{vo.lastDateTime})
+        </foreach>
+    </insert>
+
+    <select id="queryMaxLastTimestamp" resultMap="VoMap">
+        <bind name="finalNetwork" value="network == null ? 'solana' : network" />
+        select max(last_timestamp) last_timestamp
+        from token_trending
+         where is_deleted = 0
+         <if test="finalNetwork != null">
+         and network = #{finalNetwork}
+         </if>
+    </select>
+    <select id="queryTrending" resultType="cn.z.zai.dto.vo.TokenDetailVo">
+        select td.address,td.name,td.symbol,if(td.oss_image != '',td.oss_image,td.image) as image,td.mkt_cap mktCap,td.price,td.price_24h_change price24hChange
+        from  token_trending tt
+        inner join token_detail td on tt.address = td.address
+        where tt.is_deleted = 0 and td.is_deleted = 0 and td.show_status = 1 and td.hidden = 0
+        and tt.address not in ('So11111111111111111111111111111111111111111','So11111111111111111111111111111111111111112','EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+        and tt.last_timestamp = #{lastTimestamp}
+    </select>
+    <select id="queryTrendingRandom" resultType="cn.z.zai.dto.vo.TokenDetailVo">
+        select td.address,td.name,td.symbol,if(td.oss_image != '',td.oss_image,td.image) as image,td.mkt_cap mktCap,td.price,td.price_24h_change price24hChange
+        from  token_trending tt
+        inner join token_detail td on tt.address = td.address
+        where tt.is_deleted = 0 and td.is_deleted = 0 and td.show_status = 1 and td.hidden = 0
+          and tt.address not in ('So11111111111111111111111111111111111111111','So11111111111111111111111111111111111111112','EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+          and tt.last_timestamp = #{lastTimestamp}
+        order by RAND()
+        limit 21
+    </select>
+
+    <delete id="deletedByTime" >
+        delete from token_trending where last_date_time &lt; #{localDateTime}
+    </delete>
+
+
+</mapper>

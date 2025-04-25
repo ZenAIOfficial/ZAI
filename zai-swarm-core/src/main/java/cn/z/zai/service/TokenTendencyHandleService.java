@@ -9,6 +9,7 @@ public interface TokenTendencyHandleService {
 
     TokenTendencyResp allTendencyLine(String address);
 
+    List<TokenTendencyMaxVo> live(String address);
 
     List<TokenTendencyMaxVo> fourHours(String address);
 

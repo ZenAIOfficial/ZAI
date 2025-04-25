@@ -14,6 +14,8 @@ public class UserAccountTransactionHistory extends BaseEntity {
 
     private static final long serialVersionUID = 6602819122654745603L;
     private LocalDate day;
+
+    private String network;
     private BigInteger tgUserId;
 
     private String transId;

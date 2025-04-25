@@ -4,6 +4,7 @@ import cn.z.zai.dto.entity.ZAiLineDetail;
 import cn.z.zai.dto.request.chat.ChatMessage;
 import cn.z.zai.dto.request.chat.ZAIBaseChatContent;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface AiBusinessService {
     Boolean sessionLimitedPre(BigInteger tgUserid);
 
     Boolean sessionLimitedCheck(BigInteger tgUserid);
+
+    BigDecimal priceTokens(String tokenAddress);
 }
